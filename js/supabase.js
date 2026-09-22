@@ -213,12 +213,43 @@ export function formatDateOnly(isoString) {
 }
 
 // ========================================================
-// OTURUM YÖNETİMİ (AUTH)
+// OTURUM YÖNETİMİ (AUTH: GİRİŞ & KAYIT OL)
 // ========================================================
 const authForm = document.getElementById('auth-form');
 const authEmail = document.getElementById('auth-email');
 const authPassword = document.getElementById('auth-password');
+const authTabLogin = document.getElementById('auth-tab-login');
+const authTabRegister = document.getElementById('auth-tab-register');
+const authSubmitBtn = document.getElementById('auth-submit-btn');
 
+let currentAuthMode = 'login'; // 'login' veya 'register'
+
+// Giriş Yap / Kayıt Ol Sekmeleri
+if (authTabLogin && authTabRegister) {
+    authTabLogin.addEventListener('click', () => {
+        currentAuthMode = 'login';
+        authTabLogin.style.background = 'var(--accent-primary)';
+        authTabLogin.style.color = '#0b0f19';
+        authTabRegister.style.background = 'transparent';
+        authTabRegister.style.color = 'var(--text-muted)';
+        if (authSubmitBtn) {
+            authSubmitBtn.innerHTML = `<span>Dükkana Giriş Yap</span> <i class="fa-solid fa-right-to-bracket"></i>`;
+        }
+    });
+
+    authTabRegister.addEventListener('click', () => {
+        currentAuthMode = 'register';
+        authTabRegister.style.background = 'var(--accent-primary)';
+        authTabRegister.style.color = '#0b0f19';
+        authTabLogin.style.background = 'transparent';
+        authTabLogin.style.color = 'var(--text-muted)';
+        if (authSubmitBtn) {
+            authSubmitBtn.innerHTML = `<span>Yeni Hesap Oluştur</span> <i class="fa-solid fa-user-plus"></i>`;
+        }
+    });
+}
+
+// Form Gönderimi (Giriş veya Kayıt)
 if (authForm) {
     authForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -230,20 +261,50 @@ if (authForm) {
             return;
         }
 
+        if (password.length < 6) {
+            showToast("Şifre en az 6 karakter olmalıdır.", "error");
+            return;
+        }
+
         showLoader();
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
-            showToast("Dükkana başarıyla giriş yapıldı!", "success");
+            if (currentAuthMode === 'register') {
+                const { data, error } = await supabase.auth.signUp({ email, password });
+                if (error) throw error;
+
+                if (data.user && (!data.session || data.user.identities?.length === 0)) {
+                    showToast("Kayıt oluşturuldu! Supabase projenizde e-posta onayı açıksa onay linkini tıklayın, aksi halde giriş yapabilirsiniz.", "info");
+                    if (authTabLogin) authTabLogin.click();
+                } else {
+                    showToast("Hesabınız başarıyla oluşturuldu ve giriş yapıldı!", "success");
+                }
+            } else {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                showToast("Dükkana başarıyla giriş yapıldı!", "success");
+            }
         } catch (err) {
-            console.error("Giriş hatası:", err);
-            showToast(err.message || "Giriş yapılamadı. Bilgilerinizi kontrol edin.", "error");
+            console.error("Auth hatası:", err);
+            let msg = err.message || "İşlem sırasında bir hata oluştu.";
+            if (msg.includes("Invalid login credentials")) {
+                msg = "Hatalı e-posta adresi veya şifre!";
+            } else if (msg.includes("User already registered")) {
+                msg = "Bu e-posta adresiyle kayıtlı bir hesap zaten var. 'Giriş Yap' sekmesinden giriş yapın.";
+            } else if (msg.includes("Email not confirmed")) {
+                msg = "E-posta henüz onaylanmamış. Supabase Authentication ayarlarından e-posta onayını tamamlayın veya 'Confirm email' ayarını kapatın.";
+            } else if (msg.includes("Password should be at least")) {
+                msg = "Şifre en az 6 karakter olmalıdır.";
+            } else if (msg.includes("signup is disabled")) {
+                msg = "Supabase projenizde yeni kullanıcı kaydı devre dışı bırakılmış.";
+            }
+            showToast(msg, "error");
         } finally {
             hideLoader();
         }
     });
 }
 
+// Çıkış Yap
 async function handleLogout() {
     showLoader();
     try {
@@ -261,7 +322,7 @@ async function handleLogout() {
 if (btnLogoutSidebar) btnLogoutSidebar.addEventListener('click', handleLogout);
 if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', handleLogout);
 
-// Supabase Auth Değişikliklerini Dinle
+// Supabase Auth Değişikliklerini Dinle & İlk Oturum Kontrolü
 if (supabase) {
     supabase.auth.onAuthStateChange((event, session) => {
         if (session && session.user) {
@@ -279,5 +340,20 @@ if (supabase) {
             if (authView) authView.style.display = 'flex';
             if (currentUserEmail) currentUserEmail.innerText = '';
         }
+    });
+
+    // Sayfa açılışında anlık oturum kontrolü
+    supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session && session.user) {
+            if (authView) authView.style.display = 'none';
+            if (appContainer) appContainer.style.display = 'block';
+            if (currentUserEmail) currentUserEmail.innerText = session.user.email;
+            showView('dashboard');
+        } else {
+            if (appContainer) appContainer.style.display = 'none';
+            if (authView) authView.style.display = 'flex';
+        }
+    }).catch(err => {
+        console.warn("İlk oturum kontrolü:", err);
     });
 }
