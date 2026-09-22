@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nalbur & Hırdavat | Stok, Satış, Cari & Proforma Teklif</title>
+    
+    <!-- FontAwesome 6 (Industrial & Hardware Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Proje CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- 1. GLOBAL LOADER (SPINNER) -->
+    <div id="global-loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- 2. BİLDİRİM TOAST ALANI -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- 3. ONAY MODALI (SİLME & KRİTİK İŞLEMLER) -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-card" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 id="confirm-modal-title"><i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-danger);"></i> Onay Gerekli</h3>
+                <button class="modal-close-btn" id="confirm-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-modal-body" style="color: var(--text-muted); font-size: 0.95rem;">Bu işlemi gerçekleştirmek istediğinize emin misiniz?</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary btn-sm" id="confirm-cancel-btn">Vazgeç</button>
+                <button class="btn btn-danger btn-sm" id="confirm-ok-btn">Evet, Devam Et</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. YENİ ÜRÜN / ÜRÜN DÜZENLEME MODALI -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="product-modal-title"><i class="fa-solid fa-boxes-stacked" style="color: var(--accent-primary);"></i> Yeni Nalbur Ürünü</h3>
+                <button class="modal-close-btn" id="product-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="product-barcode">Barkod / Ürün Kodu</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-barcode"></i>
+                                <input type="text" id="product-barcode" class="input-control" placeholder="Örn: 869112233001">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-category">Kategori *</label>
+                            <select id="product-category" class="input-control" required>
+                                <option value="Elektrot & Kaynak">Elektrot & Kaynak</option>
+                                <option value="İş Güvenliği">İş Güvenliği & Eldiven</option>
+                                <option value="Vida & Bağlantı">Vida & Civata & Bağlantı</option>
+                                <option value="Kesici & Aşındırıcı">Kesici & Aşındırıcı Taşlar</option>
+                                <option value="El Aletleri">El Aletleri & Hırdavat</option>
+                                <option value="Boya & Kimyasal">Boya & Yapıştırıcı & Silikon</option>
+                                <option value="Tesisat & Elektrik">Tesisat & Elektrik</option>
+                                <option value="Diğer">Diğer Malzemeler</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product-name">Ürün Adı ve Tanımı *</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-tag"></i>
+                            <input type="text" id="product-name" class="input-control" required placeholder="Örn: Magmaweld ESR 13 2.50mm Elektrot (5 kg)">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="product-unit">Birim *</label>
+                            <select id="product-unit" class="input-control" required>
+                                <option value="Adet">Adet</option>
+                                <option value="Paket">Paket</option>
+                                <option value="Çift">Çift</option>
+                                <option value="Kutu">Kutu</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Metre">Metre</option>
+                                <option value="Rulo">Rulo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-shelf">Raf / Bölüm Kodu</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-warehouse"></i>
+                                <input type="text" id="product-shelf" class="input-control" placeholder="Örn: A-2, B-1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="product-buy-price">Alış Fiyatı (₺)</label>
+                            <input type="number" id="product-buy-price" class="input-control mono-text" step="0.01" min="0" placeholder="0.00" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-sell-price">Satış Fiyatı (₺) *</label>
+                            <input type="number" id="product-sell-price" class="input-control mono-text" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="product-stock">Mevcut Stok Miktarı *</label>
+                            <input type="number" id="product-stock" class="input-control mono-text" step="any" min="0" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-min-stock">Kritik Stok Uyarısı *</label>
+                            <input type="number" id="product-min-stock" class="input-control mono-text" step="any" min="0" value="5" title="Stok bu sayının altına inince alarm verir">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product-notes">Açıklama / Tedarikçi Notu</label>
+                        <textarea id="product-notes" class="input-control" rows="2" placeholder="Özel notlar veya tedarikçi bilgisi..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="product-cancel-btn">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="product-submit-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> Ürünü Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. HIZLI STOK GİRİŞİ MODALI (MAL KABUL) -->
+    <div class="modal-overlay" id="stock-in-modal">
+        <div class="modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-dolly" style="color: var(--accent-success);"></i> Depo / Stok Girişi</h3>
+                <button class="modal-close-btn" id="stock-in-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="stock-in-form">
+                <input type="hidden" id="stock-in-product-id">
+                <div class="modal-body">
+                    <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--border-subtle);">
+                        <div style="font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Seçili Ürün</div>
+                        <div id="stock-in-product-title" style="font-weight: 700; font-size: 1.05rem; color: var(--text-main); margin-top: 2px;">-</div>
+                        <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                            <span>Mevcut Stok: <b id="stock-in-current-qty" class="mono-text" style="color: var(--accent-primary);">-</b></span>
+                            <span>Birim: <b id="stock-in-unit">-</b></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stock-in-qty">Giriş Yapılacak Miktar *</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-plus"></i>
+                            <input type="number" id="stock-in-qty" class="input-control mono-text" step="any" min="0.01" required placeholder="Eklenecek adet/paket">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stock-in-price">Birim Alış Fiyatı (₺ - Opsiyonel)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-turkish-lira-sign"></i>
+                            <input type="number" id="stock-in-price" class="input-control mono-text" step="0.01" min="0" placeholder="Yeni alış maliyeti">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stock-in-note">Fatura No / Tedarikçi Açıklaması</label>
+                        <input type="text" id="stock-in-note" class="input-control" placeholder="Örn: X Toptan Fatura #1284">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="stock-in-cancel-btn">Vazgeç</button>
+                    <button type="submit" class="btn btn-success" id="stock-in-submit-btn">
+                        <i class="fa-solid fa-circle-check"></i> Stoğa Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 6. CARİ EKLE / DÜZENLE MODALI -->
+    <div class="modal-overlay" id="customer-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="customer-modal-title"><i class="fa-solid fa-address-book" style="color: var(--accent-primary);"></i> Yeni Cari Tanımı</h3>
+                <button class="modal-close-btn" id="customer-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="customer-form">
+                <input type="hidden" id="customer-id">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customer-type">Cari Türü *</label>
+                            <select id="customer-type" class="input-control" required>
+                                <option value="CUSTOMER">Müşteri (Alıcı)</option>
+                                <option value="SUPPLIER">Tedarikçi / Toptancı (Satıcı)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="customer-name">Firma / Usta Adı *</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="customer-name" class="input-control" required placeholder="Örn: Yılmaz Yapı İnşaat">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customer-phone">Telefon Numarası</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-phone"></i>
+                                <input type="tel" id="customer-phone" class="input-control" placeholder="0532 ...">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="customer-email">E-posta Adresi</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-envelope"></i>
+                                <input type="email" id="customer-email" class="input-control" placeholder="info@firma.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customer-city">İl / İlçe</label>
+                            <input type="text" id="customer-city" class="input-control" placeholder="Örn: İstanbul / Ümraniye">
+                        </div>
+                        <div class="form-group">
+                            <label for="customer-balance">Başlangıç Bakiyesi (₺)</label>
+                            <input type="number" id="customer-balance" class="input-control mono-text" step="0.01" value="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customer-tax-office">Vergi Dairesi</label>
+                            <input type="text" id="customer-tax-office" class="input-control" placeholder="Örn: Ümraniye VD.">
+                        </div>
+                        <div class="form-group">
+                            <label for="customer-tax-number">Vergi No / TCKN</label>
+                            <input type="text" id="customer-tax-number" class="input-control" placeholder="1234567890">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer-address">Açık Adres</label>
+                        <textarea id="customer-address" class="input-control" rows="2" placeholder="Şantiye veya dükkan teslimat adresi..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer-notes">Özel Notlar</label>
+                        <input type="text" id="customer-notes" class="input-control" placeholder="Ödeme vadesi veya çalışma şartları...">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="customer-cancel-btn">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="customer-submit-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> Cariyi Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 7. YENİ TEKLİF & SİPARİŞ OLUŞTURMA MODALI -->
+    <div class="modal-overlay" id="proposal-modal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3 id="proposal-modal-title"><i class="fa-solid fa-file-invoice-dollar" style="color: var(--accent-primary);"></i> Yeni Teklif & Sipariş Hazırla</h3>
+                <button class="modal-close-btn" id="proposal-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="proposal-form">
+                <input type="hidden" id="proposal-id">
+                <div class="modal-body">
+                    
+                    <!-- Teklif Üst Bilgileri -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="proposal-customer-select">Müşteri (Cari) *</label>
+                            <select id="proposal-customer-select" class="input-control" required>
+                                <option value="">-- Müşteri Seçin --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="proposal-price-list-select">Uygulanacak Fiyat Listesi</label>
+                            <select id="proposal-price-list-select" class="input-control">
+                                <option value="DEFAULT">Standart Perakende Fiyatı</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="proposal-type">Belge Türü *</label>
+                            <select id="proposal-type" class="input-control" required>
+                                <option value="PROPOSAL">Fiyat Teklifi (Proforma)</option>
+                                <option value="ORDER">Müşteri Siparişi</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="proposal-valid-days">Geçerlilik Süresi</label>
+                            <select id="proposal-valid-days" class="input-control">
+                                <option value="7">7 Gün</option>
+                                <option value="15" selected>15 Gün</option>
+                                <option value="30">30 Gün</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Kalem Ekleme Barı -->
+                    <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; border: 1px solid var(--border-subtle);">
+                        <div style="font-weight: 700; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--accent-primary);">
+                            <i class="fa-solid fa-plus-circle"></i> Teklife Ürün Ekle
+                        </div>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 0.5rem; align-items: end;">
+                            <div>
+                                <label style="font-size: 0.78rem; color: var(--text-dim);">Ürün Seçin</label>
+                                <select id="proposal-add-product" class="input-control">
+                                    <option value="">-- Ürün Seçin --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; color: var(--text-dim);">Miktar</label>
+                                <input type="number" id="proposal-add-qty" class="input-control mono-text" min="0.1" step="any" value="1">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; color: var(--text-dim);">Birim Fiyat (₺)</label>
+                                <input type="number" id="proposal-add-price" class="input-control mono-text" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.78rem; color: var(--text-dim);">Birim</label>
+                                <input type="text" id="proposal-add-unit" class="input-control" value="Adet" readonly style="opacity: 0.8;">
+                            </div>
+                            <button type="button" class="btn btn-primary" id="proposal-add-item-btn" style="height: 44px;">
+                                <i class="fa-solid fa-plus"></i> Ekle
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Eklenen Kalemler Tablosu -->
+                    <div class="table-responsive" style="margin-bottom: 1rem; max-height: 220px;">
+                        <table class="proposal-items-table">
+                            <thead>
+                                <tr>
+                                    <th>Ürün Adı</th>
+                                    <th>Miktar</th>
+                                    <th>Birim</th>
+                                    <th>Birim Fiyat (₺)</th>
+                                    <th>Toplam (₺)</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="proposal-items-tbody">
+                                <!-- Dinamik Kalemler -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Dip Toplamlar & Şartlar -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="proposal-terms">Teklif ve Teslimat Şartları</label>
+                            <textarea id="proposal-terms" class="input-control" rows="3" placeholder="Örn: Fiyatlarımıza KDV dahildir. Nakliye dükkanımızdan teslimdir."></textarea>
+                        </div>
+                        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.4rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                <span>Ara Toplam:</span>
+                                <span id="prop-subtotal" class="mono-text">0,00 ₺</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                                <span>İskonto (₺):</span>
+                                <input type="number" id="prop-discount" class="input-control mono-text" style="width: 100px; height: 32px; text-align: right;" value="0" min="0" step="0.01">
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                                <span>KDV (%):</span>
+                                <select id="prop-tax-rate" class="input-control" style="width: 100px; height: 32px; padding: 0 8px;">
+                                    <option value="20" selected>%20</option>
+                                    <option value="10">%10</option>
+                                    <option value="0">%0 (KDV'siz)</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-muted);">
+                                <span>KDV Tutarı:</span>
+                                <span id="prop-tax-amount" class="mono-text">0,00 ₺</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 800; border-top: 1px solid var(--border-subtle); padding-top: 0.5rem; margin-top: 0.2rem; color: var(--accent-primary);">
+                                <span>Genel Toplam:</span>
+                                <span id="prop-grand-total" class="mono-text">0,00 ₺</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="proposal-cancel-btn">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="proposal-submit-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> Teklifi Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 8. PROFORMA FATURA & TEKLİF YAZDIRMA / GÖRÜNTÜLEME MODALI -->
+    <div class="modal-overlay" id="proforma-modal">
+        <div class="modal-card modal-lg" style="background: #e2e8f0; max-height: 95vh;">
+            <div class="modal-header" style="border-color: #cbd5e1; margin-bottom: 0.75rem;">
+                <h3 style="color: #0f172a;"><i class="fa-solid fa-print" style="color: var(--accent-primary);"></i> Proforma Fatura & Teklif Belgesi</h3>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-sm btn-whatsapp" id="btn-share-proposal-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i> WhatsApp'tan Gönder
+                    </button>
+                    <button class="btn btn-sm btn-primary" id="btn-print-proforma">
+                        <i class="fa-solid fa-print"></i> Yazdır / PDF Kaydet
+                    </button>
+                    <button class="modal-close-btn" id="proforma-modal-close" style="color: #475569;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <!-- Proforma Fatura Sayfası (Baskı Şablonu) -->
+            <div class="proforma-sheet" id="proforma-print-content">
+                <!-- Dinamik JavaScript ile doldurulacak -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. YENİ FİYAT LİSTESİ OLUŞTURMA / DÜZENLEME MODALI -->
+    <div class="modal-overlay" id="pricelist-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="pricelist-modal-title"><i class="fa-solid fa-tags" style="color: var(--accent-primary);"></i> Yeni Fiyat Listesi</h3>
+                <button class="modal-close-btn" id="pricelist-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="pricelist-form">
+                <input type="hidden" id="pricelist-id">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pricelist-name">Liste Adı *</label>
+                            <input type="text" id="pricelist-name" class="input-control" required placeholder="Örn: Toptan Fiyat Listesi">
+                        </div>
+                        <div class="form-group">
+                            <label for="pricelist-code">Liste Kodu</label>
+                            <input type="text" id="pricelist-code" class="input-control" placeholder="Örn: TOPTAN, USTA, SANTIYE">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pricelist-valid-from">Geçerlilik Başlangıcı</label>
+                            <input type="date" id="pricelist-valid-from" class="input-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="pricelist-valid-until">Geçerlilik Bitişi</label>
+                            <input type="date" id="pricelist-valid-until" class="input-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pricelist-desc">Açıklama / Not</label>
+                        <input type="text" id="pricelist-desc" class="input-control" placeholder="Örn: Kaynak ve sanayi ustalarına özel iskontolu fiyatlar...">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="pricelist-cancel-btn">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="pricelist-submit-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> Listeyi Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 10. FİYAT LİSTESİ ÜRÜNLERİNİ YÖNETME MODALI -->
+    <div class="modal-overlay" id="pricelist-items-modal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3 id="pricelist-items-title"><i class="fa-solid fa-tags" style="color: var(--accent-primary);"></i> Liste Fiyatlarını Belirle</h3>
+                <button class="modal-close-btn" id="pricelist-items-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="active-pricelist-id">
+                
+                <!-- Ürün ve Özel Fiyat Ekleme Barı -->
+                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--border-subtle);">
+                    <div style="font-weight: 700; font-size: 0.9rem; color: var(--accent-primary); margin-bottom: 0.6rem;">
+                        <i class="fa-solid fa-plus-circle"></i> Listeye Özel Ürün Fiyatı Tanımla
+                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 0.5rem; align-items: end;">
+                        <div>
+                            <label style="font-size: 0.78rem; color: var(--text-dim);">Ürün Seçin</label>
+                            <select id="pl-item-product-select" class="input-control">
+                                <option value="">-- Ürün Seçin --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.78rem; color: var(--text-dim);">Standart Fiyat</label>
+                            <input type="text" id="pl-item-std-price" class="input-control mono-text" readonly placeholder="0,00 ₺" style="opacity: 0.8;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.78rem; color: var(--text-dim);">Özel Fiyat (₺) *</label>
+                            <input type="number" id="pl-item-custom-price" class="input-control mono-text" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.78rem; color: var(--text-dim);">Min Miktar</label>
+                            <input type="number" id="pl-item-min-qty" class="input-control mono-text" value="1" min="1" step="any">
+                        </div>
+                        <button type="button" class="btn btn-primary" id="pl-item-save-btn" style="height: 44px;">
+                            <i class="fa-solid fa-plus"></i> Ekle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bu Listeye Tanımlı Ürünler Tablosu -->
+                <div class="table-responsive" style="max-height: 340px;">
+                    <table class="price-list-items-table">
+                        <thead>
+                            <tr>
+                                <th>Ürün Adı</th>
+                                <th>Standart Fiyat</th>
+                                <th>Bu Listeye Özel Fiyat</th>
+                                <th>Fark / İndirim</th>
+                                <th>Min Miktar</th>
+                                <th style="text-align: right;">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pricelist-items-tbody">
+                            <!-- Dinamik Dolacak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="pricelist-items-close-btn">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- ========================================================
+         9. GİRİŞ EKRANI (AUTH VIEW)
+         ======================================================== -->
+    <section id="auth-view">
+        <div class="auth-card">
+            <div class="auth-brand">
+                <div class="brand-badge"><i class="fa-solid fa-hammer"></i></div>
+                <h1>Nalbur<span>Stok</span></h1>
+                <p>Hırdavat, Cari, Stok & Proforma Teklif Sistemi</p>
+            </div>
+
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="auth-email">Kullanıcı E-posta</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="auth-email" class="input-control" required placeholder="nalbur@dukkan.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="auth-password">Giriş Şifresi</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="auth-password" class="input-control" required placeholder="••••••••">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="auth-submit-btn">
+                    <span>Dükkana Giriş Yap</span> <i class="fa-solid fa-right-to-bracket"></i>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- ========================================================
+         10. ANA UYGULAMA ALANI (APP CONTAINER)
+         ======================================================== -->
+    <div id="app-container">
+
+        <!-- Masaüstü Sabit Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon"><i class="fa-solid fa-hammer"></i></div>
+                <div class="sidebar-logo-title">Nalbur<span>Stok</span></div>
+            </div>
+
+            <ul class="sidebar-nav">
+                <li class="nav-item active" id="nav-dashboard">
+                    <button><i class="fa-solid fa-chart-pie"></i><span>Özet Panel</span></button>
+                </li>
+                <li class="nav-item" id="nav-pos">
+                    <button><i class="fa-solid fa-cash-register"></i><span>Hızlı Satış (Kasa)</span></button>
+                </li>
+                <li class="nav-item" id="nav-proposals">
+                    <button><i class="fa-solid fa-file-invoice-dollar"></i><span>Sipariş & Teklif (Proforma)</span></button>
+                </li>
+                <li class="nav-item" id="nav-products">
+                    <button><i class="fa-solid fa-boxes-stacked"></i><span>Ürünler & Stok</span></button>
+                </li>
+                <li class="nav-item" id="nav-pricelists">
+                    <button><i class="fa-solid fa-tags"></i><span>Fiyat Listeleri</span></button>
+                </li>
+                <li class="nav-item" id="nav-customers">
+                    <button><i class="fa-solid fa-address-book"></i><span>Cari Hesaplar</span></button>
+                </li>
+                <li class="nav-item" id="nav-catalog">
+                    <button><i class="fa-solid fa-book-open"></i><span>Dijital Katalog (Afiş)</span></button>
+                </li>
+                <li class="nav-item" id="nav-movements">
+                    <button><i class="fa-solid fa-clock-rotate-left"></i><span>Stok Hareketleri</span></button>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-badge">
+                    <span class="user-name">Usta / Dükkan</span>
+                    <span class="user-email-text" id="current-user-email">giriş yapıldı</span>
+                </div>
+                <button class="btn-icon-logout" id="btn-logout-sidebar" title="Çıkış Yap">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobil Üst Bar -->
+        <header class="mobile-header">
+            <div class="mobile-brand">
+                <i class="fa-solid fa-hammer" style="color: var(--accent-primary);"></i>
+                <span>NalburStok</span>
+            </div>
+            <button class="btn-icon-logout" id="btn-logout-mobile" title="Çıkış Yap">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </header>
+
+        <!-- Mobil Alt Menü Barı (Scrollable 7 Buton) -->
+        <nav class="mobile-bottom-nav">
+            <button class="mobile-nav-btn active" id="m-nav-dashboard">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Özet</span>
+            </button>
+            <button class="mobile-nav-btn" id="m-nav-pos">
+                <i class="fa-solid fa-cash-register"></i>
+                <span>Kasa</span>
+            </button>
+            <button class="mobile-nav-btn" id="m-nav-proposals">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <span>Teklif</span>
+            </button>
+            <button class="mobile-nav-btn" id="m-nav-products">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Stok</span>
+            </button>
+            <button class="mobile-nav-btn" id="m-nav-pricelists">
+                <i class="fa-solid fa-tags"></i>
+                <span>Fiyatlar</span>
+            </button>
+            <button class="mobile-nav-btn" id="m-nav-customers">
+                <i class="fa-solid fa-address-book"></i>
+                <span>Cari</span>
+            </button>
+            <button class="mobile-nav-btn" id="m-nav-catalog">
+                <i class="fa-solid fa-book-open"></i>
+                <span>Katalog</span>
+            </button>
+        </nav>
+
+        <!-- Ana Çalışma Ekranları -->
+        <main class="main-content">
+
+            <!-- ==============================================
+                 A. DASHBOARD VIEW (ÖZET PANEL)
+                 ============================================== -->
+            <section id="dashboard-view" class="view-section active">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2><i class="fa-solid fa-gauge-high" style="color: var(--accent-primary);"></i> Dükkan Durumu</h2>
+                        <p>Nalbur envanteri, kritik stok alarmları ve günlük satış özeti</p>
+                    </div>
+                    <div class="view-header-actions">
+                        <button class="btn btn-primary" id="dash-btn-quick-sale">
+                            <i class="fa-solid fa-cash-register"></i> Hızlı Satış Aç
+                        </button>
+                        <button class="btn btn-secondary" id="dash-btn-new-product">
+                            <i class="fa-solid fa-plus"></i> Yeni Ürün Ekle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 Temel İstatistik Kartı -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon-box amber"><i class="fa-solid fa-boxes-stacked"></i></div>
+                        <div class="stat-content">
+                            <span class="stat-label">Toplam Ürün Çeşidi</span>
+                            <span class="stat-number" id="stat-total-products">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-box blue"><i class="fa-solid fa-cubes"></i></div>
+                        <div class="stat-content">
+                            <span class="stat-label">Toplam Stok Miktarı</span>
+                            <span class="stat-number" id="stat-total-stock">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-box red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-content">
+                            <span class="stat-label">Kritik Stok Uyarısı</span>
+                            <span class="stat-number" id="stat-critical-count">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-box green"><i class="fa-solid fa-turkish-lira-sign"></i></div>
+                        <div class="stat-content">
+                            <span class="stat-label">Bugünkü Satış Cirosu</span>
+                            <span class="stat-number" id="stat-today-revenue">0,00 ₺</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Bölümleri: Kritik Stok & Son Hareketler -->
+                <div class="dashboard-sections-grid">
+                    
+                    <!-- Kritik Stok Listesi -->
+                    <div class="card-panel">
+                        <div class="card-panel-header">
+                            <h3 class="danger-title"><i class="fa-solid fa-bell"></i> Kritik Seviyedeki Ürünler</h3>
+                            <span class="badge badge-red" id="critical-badge-count">0 Ürün</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ürün Adı</th>
+                                        <th>Kategori</th>
+                                        <th>Kalan</th>
+                                        <th>Kritik Eşik</th>
+                                        <th>İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-critical-tbody">
+                                    <!-- Dinamik Dolacak -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Son Satışlar ve Stok Hareketleri -->
+                    <div class="card-panel">
+                        <div class="card-panel-header">
+                            <h3 class="info-title"><i class="fa-solid fa-receipt"></i> Son İşlemler</h3>
+                            <button class="btn btn-secondary btn-sm" id="dash-view-all-movements">Tümünü Gör</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Ürün / İşlem</th>
+                                        <th>Tür</th>
+                                        <th>Miktar</th>
+                                        <th>Tutar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-recent-tbody">
+                                    <!-- Dinamik Dolacak -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- ==============================================
+                 B. HIZLI SATIŞ / KASA EKRANI (POS VIEW)
+                 ============================================== -->
+            <section id="pos-view" class="view-section">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2><i class="fa-solid fa-cash-register" style="color: var(--accent-primary);"></i> Hızlı Tezgah Satışı (Kasa)</h2>
+                        <p>Nalbur tezgahında tek tıkla sepete ekle, satışı tamamla ve stoğu anında düşür</p>
+                    </div>
+                </div>
+
+                <div class="pos-container">
+                    
+                    <!-- Sol Taraf: Ürün Arama & Katalog -->
+                    <div class="pos-products-panel">
+                        <div class="pos-search-bar">
+                            <div class="input-wrapper pos-search-input">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="pos-search-input" class="input-control" placeholder="Ürün adı veya barkod ile hızlı arayın...">
+                            </div>
+                            <div class="price-list-selector-box" title="Fiyat Listesi Seç">
+                                <i class="fa-solid fa-tags"></i>
+                                <select id="pos-price-list-select" class="input-control" style="cursor: pointer;">
+                                    <option value="DEFAULT">Standart Perakende</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Kategori Hapları -->
+                        <div class="category-chips" id="pos-category-chips">
+                            <button class="chip-btn active" data-cat="all">Tümü</button>
+                            <button class="chip-btn" data-cat="Elektrot & Kaynak">Elektrot & Kaynak</button>
+                            <button class="chip-btn" data-cat="İş Güvenliği">İş Güvenliği & Eldiven</button>
+                            <button class="chip-btn" data-cat="Vida & Bağlantı">Vida & Bağlantı</button>
+                            <button class="chip-btn" data-cat="Kesici & Aşındırıcı">Kesici Taşlar</button>
+                            <button class="chip-btn" data-cat="El Aletleri">El Aletleri</button>
+                            <button class="chip-btn" data-cat="Boya & Kimyasal">Boya & Kimyasal</button>
+                            <button class="chip-btn" data-cat="Tesisat & Elektrik">Tesisat & Elektrik</button>
+                        </div>
+
+                        <!-- Ürünler Grid -->
+                        <div class="pos-grid" id="pos-products-grid">
+                            <!-- Dinamik Ürün Kartları -->
+                        </div>
+                    </div>
+
+                    <!-- Sağ Taraf: Satış Sepeti & Ödeme -->
+                    <div class="pos-cart-panel">
+                        <div class="pos-cart-header">
+                            <h3><i class="fa-solid fa-cart-shopping" style="color: var(--accent-primary);"></i> Satış Sepeti</h3>
+                            <button class="btn btn-secondary btn-sm" id="pos-clear-cart-btn" title="Sepeti Temizle">
+                                <i class="fa-solid fa-trash-can"></i> Temizle
+                            </button>
+                        </div>
+
+                        <!-- Sepet Listesi -->
+                        <div class="pos-cart-list" id="pos-cart-items">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-cart-arrow-down"></i>
+                                <p>Sepetiniz boş.<br>Soldan ürün seçerek ekleyin.</p>
+                            </div>
+                        </div>
+
+                        <!-- Toplam ve Ödeme Seçenekleri -->
+                        <div class="pos-summary">
+                            <div class="pos-summary-row">
+                                <span>Toplam Kalem:</span>
+                                <span id="pos-total-items-count" class="mono-text">0 adet</span>
+                            </div>
+                            <div class="pos-summary-row pos-summary-total">
+                                <span>Ödenecek Tutar:</span>
+                                <span class="total-val" id="pos-total-amount">0,00 ₺</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0.75rem;">
+                            <label style="font-size: 0.82rem;">Ödeme Türü</label>
+                            <div class="payment-selector">
+                                <button type="button" class="payment-btn active" data-method="Nakit">
+                                    <i class="fa-solid fa-money-bill-wave"></i> Nakit
+                                </button>
+                                <button type="button" class="payment-btn" data-method="Kredi Kartı">
+                                    <i class="fa-solid fa-credit-card"></i> Kredi Kartı
+                                </button>
+                                <button type="button" class="payment-btn" data-method="Veresiye">
+                                    <i class="fa-solid fa-book"></i> Veresiye
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <input type="text" id="pos-customer-name" class="input-control" placeholder="Müşteri / Cari Adı (Opsiyonel)">
+                        </div>
+
+                        <button class="btn btn-success btn-block btn-lg" id="pos-checkout-btn">
+                            <i class="fa-solid fa-check"></i> <span>Satışı Tamamla</span>
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- ==============================================
+                 C. SİPARİŞ & TEKLİF YÖNETİMİ (PROPOSALS VIEW)
+                 ============================================== -->
+            <section id="proposals-view" class="view-section">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2><i class="fa-solid fa-file-invoice-dollar" style="color: var(--accent-primary);"></i> Sipariş ve Teklifler (Proforma)</h2>
+                        <p>Müşterilerinize resmi proforma teklif hazırlayın, WhatsApp'tan iletin ve siparişe dönüştürün</p>
+                    </div>
+                    <div class="view-header-actions">
+                        <button class="btn btn-primary" id="btn-open-new-proposal">
+                            <i class="fa-solid fa-plus"></i> Yeni Teklif / Sipariş Hazırla
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtre Barı -->
+                <div class="products-filter-bar">
+                    <div class="input-wrapper filter-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="proposals-search-input" class="input-control" placeholder="Teklif no veya müşteri adı ile arayın...">
+                    </div>
+                    <select id="proposals-status-filter" class="input-control filter-select">
+                        <option value="all">Tüm Durumlar</option>
+                        <option value="DRAFT">Taslak</option>
+                        <option value="SENT">Gönderildi</option>
+                        <option value="APPROVED">Onaylandı (Satışa Döndü)</option>
+                        <option value="REJECTED">İptal Edildi</option>
+                    </select>
+                </div>
+
+                <!-- Teklifler Tablosu -->
+                <div class="card-panel">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Teklif No</th>
+                                    <th>Müşteri Adı</th>
+                                    <th>Tarih</th>
+                                    <th>Geçerlilik</th>
+                                    <th>Tutar (KDV Dahil)</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="proposals-table-tbody">
+                                <!-- Dinamik Dolacak -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ==============================================
+                 D. ÜRÜNLER & STOK YÖNETİMİ (PRODUCTS VIEW)
+                 ============================================== -->
+            <section id="products-view" class="view-section">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2><i class="fa-solid fa-boxes-stacked" style="color: var(--accent-primary);"></i> Ürünler ve Envanter</h2>
+                        <p>Nalbur malzemelerinizi listeleyin, stokları güncelleyin ve yeni ürün tanımlayın</p>
+                    </div>
+                    <div class="view-header-actions">
+                        <button class="btn btn-primary" id="btn-open-new-product">
+                            <i class="fa-solid fa-plus"></i> Yeni Ürün Ekle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtre Barı -->
+                <div class="products-filter-bar">
+                    <div class="input-wrapper filter-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="products-search-input" class="input-control" placeholder="Ürün adı veya barkod ile arayın...">
+                    </div>
+                    <select id="products-category-filter" class="input-control filter-select">
+                        <option value="all">Tüm Kategoriler</option>
+                        <option value="Elektrot & Kaynak">Elektrot & Kaynak</option>
+                        <option value="İş Güvenliği">İş Güvenliği & Eldiven</option>
+                        <option value="Vida & Bağlantı">Vida & Bağlantı</option>
+                        <option value="Kesici & Aşındırıcı">Kesici & Aşındırıcı Taşlar</option>
+                        <option value="El Aletleri">El Aletleri & Hırdavat</option>
+                        <option value="Boya & Kimyasal">Boya & Kimyasal</option>
+                        <option value="Tesisat & Elektrik">Tesisat & Elektrik</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                    <button class="btn btn-secondary" id="products-critical-filter-btn">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-danger);"></i> Kritik Stoktakiler
+                    </button>
+                </div>
+
+                <!-- Ürün Tablosu -->
+                <div class="card-panel">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Barkod</th>
+                                    <th>Ürün Adı</th>
+                                    <th>Kategori</th>
+                                    <th>Raf</th>
+                                    <th>Alış (₺)</th>
+                                    <th>Satış (₺)</th>
+                                    <th>Mevcut Stok</th>
+                                    <th>Kritik Sınır</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-tbody">
+                                <!-- Dinamik Dolacak -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ==============================================
+                 E. CARİ HESAP YÖNETİMİ (CUSTOMERS VIEW)
+                 ============================================== -->
+            <section id="customers-view" class="view-section">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2><i class="fa-solid fa-address-book" style="color: var(--accent-primary);"></i> Cari Hesaplar (Müşteri & Tedarikçi)</h2>
+                        <p>Müşteri ve toptancı tedarikçi kartları, iletişim bilgileri ve borç/alacak takibi</p>
+                    </div>
+                    <div class="view-header-actions">
+                        <button class="btn btn-primary" id="btn-open-new-customer">
+                            <i class="fa-solid fa-user-plus"></i> Yeni Cari Tanımla
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtre Barı -->
+                <div class="products-filter-bar">
+                    <div class="input-wrapper filter-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="customers-search-input" class="input-control" placeholder="Cari adı, telefon veya şehir ile arayın...">
+                    </div>
+                    <select id="customers-type-filter" class="input-control filter-select">
+                        <option value="all">Tüm Cariler</option>
+                        <option value="CUSTOMER">Müşteriler</option>
+                        <option value="SUPPLIER">Tedarikçiler / Toptancılar</option>
+                    </select>
+                </div>
+
+                <!-- Cari Tablosu -->
+                <div class="card-panel">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Firma / Usta Adı</th>
+                                    <th>Tür</th>
+                                    <th>Telefon</th>
+                                    <th>İl / İlçe</th>
+                                    <th>Vergi Dairesi / No</th>
+                                    <th>Bakiye Durumu</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-table-tbody">
+                                <!-- Dinamik Dolacak -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ==============================================
+                 F. DİJİTAL KATALOG OLUŞTURUCU (CATALOG VIEW)
+                 ============================================== -->
+            <section id="catalog-view" class="view-section">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2><i class="fa-solid fa-book-open" style="color: var(--accent-primary);"></i> Sosyal Medya Dijital Katalog Oluşturucu</h2>
+                        <p>Nalbur ürünlerinizle Instagram, WhatsApp ve Facebook'ta paylaşmalık şık fiyatlı afiş ve broşür hazırlayın</p>
+                    </div>
+                    <div class="view-header-actions">
+                        <button class="btn btn-whatsapp" id="catalog-copy-whatsapp-btn">
+                            <i class="fa-brands fa-whatsapp"></i> Metni WhatsApp İçin Kopyala
+                        </button>
+                        <button class="btn btn-primary" id="catalog-print-btn">
+                            <i class="fa-solid fa-print"></i> Afişi Yazdır / PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="catalog-builder-container">
+                    
+                    <!-- Sol Taraf: Katalog Ayarları & Ürün Seçici -->
+                    <div class="catalog-sidebar-panel">
+                        <h3 style="font-size: 1.05rem; margin-bottom: 1rem; color: var(--accent-primary);">
+                            <i class="fa-solid fa-sliders"></i> Katalog Ayarları
+                        </h3>
+
+                        <div class="form-group">
+                            <label for="catalog-title-input">Afiş Başlığı</label>
+                            <input type="text" id="catalog-title-input" class="input-control" value="Haftanın Nalbur Fırsatları">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="catalog-subtitle-input">Alt Başlık / Slogan</label>
+                            <input type="text" id="catalog-subtitle-input" class="input-control" value="Stoklarla sınırlı toptan ve perakende şok fiyatlar!">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="catalog-phone-input">İletişim / Sipariş Telefonu</label>
+                            <input type="text" id="catalog-phone-input" class="input-control" value="0532 000 00 00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="catalog-address-input">Dükkan Adresi</label>
+                            <input type="text" id="catalog-address-input" class="input-control" value="Sanayi Sitesi Girişi No:12">
+                        </div>
+
+                        <hr style="border-color: var(--border-subtle); margin: 1.25rem 0;">
+
+                        <!-- Kataloğa Ürün Ekle -->
+                        <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-main);">
+                            <i class="fa-solid fa-plus-circle"></i> Kataloğa Ürün Ekle
+                        </h4>
+
+                        <div class="form-group">
+                            <label for="catalog-product-select">Ürün Seçin</label>
+                            <select id="catalog-product-select" class="input-control">
+                                <option value="">-- Ürün Seçin --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="catalog-promo-price">Kampanya Fiyatı (₺)</label>
+                                <input type="number" id="catalog-promo-price" class="input-control mono-text" step="0.01" min="0" placeholder="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="catalog-promo-tag">Etiket Rozeti</label>
+                                <input type="text" id="catalog-promo-tag" class="input-control" value="FIRSAT">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-secondary btn-block" id="catalog-add-product-btn">
+                            <i class="fa-solid fa-plus"></i> Afişe Ekle
+                        </button>
+                    </div>
+
+                    <!-- Sağ Taraf: Canlı Afiş / Broşür Önizlemesi -->
+                    <div>
+                        <div class="catalog-flyer" id="catalog-flyer-preview">
+                            <div class="catalog-flyer-header">
+                                <div class="catalog-badge-top">🔥 GÜNCEL FİYAT BÜLTENİ</div>
+                                <h1 class="catalog-flyer-title" id="flyer-display-title">Haftanın Nalbur <span>Fırsatları</span></h1>
+                                <p class="catalog-flyer-sub" id="flyer-display-sub">Stoklarla sınırlı toptan ve perakende şok fiyatlar!</p>
+                            </div>
+
+                            <!-- Afiş Ürün Kartları Gridi -->
+                            <div class="catalog-items-grid" id="flyer-items-grid">
+                                <!-- Dinamik Afiş Kartları -->
+                            </div>
+
+                            <!-- Afiş Alt Bilgisi -->
+                            <div class="catalog-flyer-footer">
+                                <div class="catalog-contact-info">
+                                    <span><i class="fa-solid fa-phone"></i> <b id="flyer-display-phone">0532 000 00 00</b></span>
+                                    <span><i class="fa-solid fa-location-dot"></i> <span id="flyer-display-address">Sanayi Sitesi Girişi No:12</span></span>
+                                </div>
+                                <div style="font-size: 0.82rem; color: var(--accent-primary); font-weight: 700;">
+                                    ⚡ Hızlı Teslimat & Kaliteli Malzeme
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- ==============================================
+                 G. FİYAT LİSTELERİ (PRICELISTS VIEW)
+                 ============================================== -->
+            <section id="pricelists-view" class="view-section">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2><i class="fa-solid fa-tags" style="color: var(--accent-primary);"></i> Çoklu Fiyat Listeleri & Tarifeler</h2>
+                        <p>Toptan, sanayi ustası, şantiye ve kampanyalara özel ürün fiyat listeleri oluşturun</p>
+                    </div>
+                    <div class="view-header-actions">
+                        <button class="btn btn-primary" id="btn-open-new-pricelist">
+                            <i class="fa-solid fa-plus"></i> Yeni Fiyat Listesi Oluştur
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtre Barı -->
+                <div class="products-filter-bar">
+                    <div class="input-wrapper filter-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="pricelists-search-input" class="input-control" placeholder="Liste adı veya kodu ile arayın...">
+                    </div>
+                </div>
+
+                <!-- Fiyat Listeleri Tablosu -->
+                <div class="card-panel">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Liste Adı</th>
+                                    <th>Kod</th>
+                                    <th>Tanımlı Ürün Fiyatı</th>
+                                    <th>Geçerlilik Tarihi</th>
+                                    <th>Açıklama</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pricelists-table-tbody">
+                                <!-- Dinamik Dolacak -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ==============================================
+                 H. STOK HAREKETLERİ (MOVEMENTS VIEW)
+                 ============================================== -->
+            <section id="movements-view" class="view-section">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2><i class="fa-solid fa-clock-rotate-left" style="color: var(--accent-primary);"></i> Stok Hareket Geçmişi</h2>
+                        <p>Depo girişleri, tezgah satışları ve zayi/düzeltme kayıtları</p>
+                    </div>
+                </div>
+
+                <div class="products-filter-bar">
+                    <select id="movements-type-filter" class="input-control filter-select">
+                        <option value="all">Tüm Hareket Türleri</option>
+                        <option value="IN">Stok Girişi (Alış)</option>
+                        <option value="OUT">Satış / Çıkış</option>
+                        <option value="WASTE">Fire / Zayi</option>
+                        <option value="ADJUST">Sayım Düzeltme</option>
+                    </select>
+                </div>
+
+                <div class="card-panel">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih / Saat</th>
+                                    <th>Ürün Adı</th>
+                                    <th>Kategori</th>
+                                    <th>Hareket Türü</th>
+                                    <th>Miktar</th>
+                                    <th>Birim Fiyat</th>
+                                    <th>Toplam Tutar</th>
+                                    <th>Not / Açıklama</th>
+                                </tr>
+                            </thead>
+                            <tbody id="movements-table-tbody">
+                                <!-- Dinamik Dolacak -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Supabase JS Client v2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Modüler Uygulama Scriptleri -->
+    <script src="js/supabase.js" type="module"></script>
+    <script src="js/dashboard.js" type="module"></script>
+    <script src="js/products.js" type="module"></script>
+    <script src="js/pricelists.js" type="module"></script>
+    <script src="js/pos.js" type="module"></script>
+    <script src="js/customers.js" type="module"></script>
+    <script src="js/proposals.js" type="module"></script>
+    <script src="js/catalog.js" type="module"></script>
+    <script src="js/movements.js" type="module"></script>
+
+</body>
+</html>
