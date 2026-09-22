@@ -1970,3 +1970,284 @@ main.main-content {
         grid-template-columns: 1fr;
     }
 }
+
+/* ========================================================
+   BASKI VE PDF DÜZENİ (@media print)
+   A4 Proforma Fatura & Dijital Katalog / Afiş Baskı Şablonları
+   ======================================================== */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 8mm 10mm;
+    }
+
+    html, body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Genel Arayüz Elemanlarını Gizle */
+    aside.sidebar,
+    .mobile-header,
+    .mobile-bottom-nav,
+    .toast-container,
+    #global-loader,
+    .view-header,
+    .catalog-sidebar-panel,
+    .btn-table-action.delete,
+    .modal-actions,
+    .modal-header .btn,
+    .modal-header .modal-close-btn,
+    #confirm-modal,
+    #product-modal,
+    #stock-in-modal,
+    #customer-modal,
+    #proposal-modal,
+    #pricelist-modal,
+    #pricelist-items-modal,
+    #pos-item-modal,
+    #auth-view {
+        display: none !important;
+    }
+
+    #app-container {
+        display: block !important;
+        min-height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    main.main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    /* ----------------------------------------------------
+       1. DİJİTAL KATALOG & AFİŞ BASKI / PDF ŞABLONU
+       ---------------------------------------------------- */
+    body.printing-catalog .view-section:not(#catalog-view),
+    body:not(.printing-proforma) .view-section:not(#catalog-view) {
+        display: none !important;
+    }
+
+    body.printing-catalog #catalog-view,
+    body:not(.printing-proforma) #catalog-view {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    body.printing-catalog .catalog-builder-container,
+    body:not(.printing-proforma) .catalog-builder-container {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Afiş Çerçevesi - Profesyonel Beyaz Zeminli A4 Broşür */
+    .catalog-flyer {
+        background: #ffffff !important;
+        border: 2.5px solid #0f172a !important;
+        border-radius: 12px !important;
+        padding: 1.5rem !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+    }
+
+    .catalog-flyer-header {
+        text-align: center !important;
+        padding: 1rem 1.5rem !important;
+        margin-bottom: 1.25rem !important;
+        border-bottom: 2.5px solid #0f172a !important;
+        background: #f8fafc !important;
+        border-radius: 8px !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    .catalog-badge-top {
+        background: #d97706 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        font-size: 0.8rem !important;
+        padding: 4px 16px !important;
+        border-radius: 20px !important;
+        display: inline-block !important;
+        letter-spacing: 0.06em !important;
+        margin-bottom: 0.4rem !important;
+    }
+
+    .catalog-flyer-title {
+        color: #0f172a !important;
+        font-size: 2.2rem !important;
+        font-weight: 900 !important;
+        line-height: 1.2 !important;
+        margin: 0.35rem 0 !important;
+    }
+
+    .catalog-flyer-title span {
+        color: #d97706 !important;
+    }
+
+    .catalog-flyer-sub {
+        color: #475569 !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        margin-top: 0.25rem !important;
+    }
+
+    /* 3 Sütunlu Ürün Izgarası (A4 sayfaya tam oturan) */
+    .catalog-items-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 12px !important;
+        margin-bottom: 1.25rem !important;
+    }
+
+    /* Ürün Kartı */
+    .catalog-card {
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        page-break-inside: avoid !important;
+        box-shadow: none !important;
+        position: relative !important;
+        min-height: 130px !important;
+    }
+
+    .catalog-card-promo {
+        position: absolute !important;
+        top: 8px !important;
+        right: 8px !important;
+        background: #dc2626 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        font-size: 0.72rem !important;
+        padding: 3px 8px !important;
+        border-radius: 4px !important;
+        text-transform: uppercase !important;
+    }
+
+    .catalog-card-cat {
+        color: #d97706 !important;
+        font-size: 0.75rem !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        margin-bottom: 3px !important;
+    }
+
+    .catalog-card-name {
+        color: #0f172a !important;
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        line-height: 1.25 !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .catalog-card-price-box {
+        border-top: 1.5px dashed #cbd5e1 !important;
+        padding-top: 0.5rem !important;
+        display: flex !important;
+        align-items: baseline !important;
+        justify-content: space-between !important;
+        margin-top: auto !important;
+    }
+
+    .catalog-card-price {
+        font-family: 'JetBrains Mono', monospace !important;
+        color: #0f172a !important;
+        font-size: 1.45rem !important;
+        font-weight: 900 !important;
+    }
+
+    .catalog-card-unit {
+        color: #64748b !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+    }
+
+    /* Alt Bilgi Bandı */
+    .catalog-flyer-footer {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        padding: 0.85rem 1.25rem !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        page-break-inside: avoid !important;
+    }
+
+    .catalog-contact-info {
+        display: flex !important;
+        gap: 2rem !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+    }
+
+    .catalog-contact-info span {
+        color: #0f172a !important;
+    }
+
+    .catalog-flyer-footer div:last-child {
+        color: #d97706 !important;
+        font-weight: 800 !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* ----------------------------------------------------
+       2. PROFORMA FATURA BASKI / PDF ŞABLONU
+       ---------------------------------------------------- */
+    body.printing-proforma .view-section,
+    body.printing-proforma #catalog-view {
+        display: none !important;
+    }
+
+    body.printing-proforma #proforma-modal {
+        display: block !important;
+        position: static !important;
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    body.printing-proforma .modal-card.modal-lg {
+        background: #ffffff !important;
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        transform: none !important;
+    }
+
+    body.printing-proforma .modal-header {
+        display: none !important;
+    }
+
+    body.printing-proforma .proforma-sheet {
+        padding: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        page-break-inside: avoid !important;
+    }
+}

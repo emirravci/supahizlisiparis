@@ -18,9 +18,24 @@ const posTotalAmount = document.getElementById('pos-total-amount');
 const posCustomerName = document.getElementById('pos-customer-name');
 const posCheckoutBtn = document.getElementById('pos-checkout-btn');
 
+// DOM Elemanları - Ürün Miktar & Fiyat Modal (Popup)
+const posItemModal = document.getElementById('pos-item-modal');
+const posItemModalClose = document.getElementById('pos-item-modal-close');
+const posItemCancelBtn = document.getElementById('pos-item-cancel-btn');
+const posItemForm = document.getElementById('pos-item-form');
+const posItemProductId = document.getElementById('pos-item-product-id');
+const posItemModalName = document.getElementById('pos-item-modal-name');
+const posItemModalBarcode = document.getElementById('pos-item-modal-barcode');
+const posItemModalStock = document.getElementById('pos-item-modal-stock');
+const posItemUnitLabel = document.getElementById('pos-item-unit-label');
+const posItemQty = document.getElementById('pos-item-qty');
+const posItemPrice = document.getElementById('pos-item-price');
+const posItemTotalPreview = document.getElementById('pos-item-total-preview');
+
 // Durum (State)
 let posProducts = [];
 let cart = []; // [{ product, quantity, unitPrice }]
+let currentModalProduct = null;
 let selectedCategory = 'all';
 let selectedPaymentMethod = 'Nakit';
 let availablePriceLists = [];
@@ -198,7 +213,7 @@ function renderPosProductsGrid(products) {
         `;
 
         card.addEventListener('click', () => {
-            addToCart(p);
+            openPosItemModal(p);
         });
 
         posProductsGrid.appendChild(card);
@@ -214,9 +229,7 @@ if (posSearchInput) {
             const query = posSearchInput.value.trim().toLowerCase();
             const exactMatch = posProducts.find(p => (p.barcode && p.barcode.toLowerCase() === query) || p.name.toLowerCase() === query);
             if (exactMatch) {
-                addToCart(exactMatch);
-                posSearchInput.value = '';
-                filterAndRenderPosProducts();
+                openPosItemModal(exactMatch);
             }
         }
     });
@@ -235,25 +248,125 @@ if (posCategoryChips) {
 }
 
 // ========================================================
+// ÜRÜN MİKTAR & FİYAT GİRİŞ MODALI (POPUP)
+// ========================================================
+function openPosItemModal(product) {
+    if (!product || !posItemModal) return;
+
+    currentModalProduct = product;
+    if (posItemProductId) posItemProductId.value = product.id;
+    if (posItemModalName) posItemModalName.innerText = product.name;
+    if (posItemModalBarcode) {
+        posItemModalBarcode.innerHTML = `<i class="fa-solid fa-barcode"></i> Barkod: ${product.barcode || 'Yok'}`;
+    }
+    if (posItemModalStock) {
+        posItemModalStock.innerHTML = `<i class="fa-solid fa-boxes-stacked"></i> Mevcut Stok: <strong>${product.stock_quantity} ${product.unit || 'Adet'}</strong>`;
+    }
+    if (posItemUnitLabel) {
+        posItemUnitLabel.innerText = product.unit || 'Adet';
+    }
+
+    // Default Değerler: Miktar = 1, Fiyat = Seçili Fiyat Listesi veya Standart Satış Fiyatı
+    const defaultPrice = getProductEffectivePrice(product);
+    if (posItemQty) posItemQty.value = "1";
+    if (posItemPrice) posItemPrice.value = Number(defaultPrice).toFixed(2);
+
+    updatePosItemTotalPreview();
+
+    posItemModal.classList.add('active');
+
+    // Miktar alanına otomatik odaklan ve seçili yap
+    setTimeout(() => {
+        if (posItemQty) {
+            posItemQty.focus();
+            posItemQty.select();
+        }
+    }, 60);
+}
+
+function closePosItemModal() {
+    if (posItemModal) posItemModal.classList.remove('active');
+    currentModalProduct = null;
+}
+
+function updatePosItemTotalPreview() {
+    if (!posItemTotalPreview) return;
+    const qty = parseFloat(posItemQty ? posItemQty.value : 0) || 0;
+    const price = parseFloat(posItemPrice ? posItemPrice.value : 0) || 0;
+    posItemTotalPreview.innerText = formatCurrency(qty * price);
+}
+
+if (posItemQty) posItemQty.addEventListener('input', updatePosItemTotalPreview);
+if (posItemPrice) posItemPrice.addEventListener('input', updatePosItemTotalPreview);
+
+if (posItemModalClose) posItemModalClose.addEventListener('click', closePosItemModal);
+if (posItemCancelBtn) posItemCancelBtn.addEventListener('click', closePosItemModal);
+if (posItemModal) {
+    posItemModal.addEventListener('click', (e) => {
+        if (e.target === posItemModal) closePosItemModal();
+    });
+}
+
+// ESC tuşu ile modal kapatma
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && posItemModal && posItemModal.classList.contains('active')) {
+        closePosItemModal();
+    }
+});
+
+// Modal Form Gönderimi (Sepete Ekle)
+if (posItemForm) {
+    posItemForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!currentModalProduct) return;
+
+        const qty = parseFloat(posItemQty.value);
+        const price = parseFloat(posItemPrice.value);
+
+        if (isNaN(qty) || qty <= 0) {
+            showToast("Lütfen geçerli bir miktar girin!", "error");
+            if (posItemQty) posItemQty.focus();
+            return;
+        }
+
+        if (isNaN(price) || price < 0) {
+            showToast("Lütfen geçerli bir birim fiyat girin!", "error");
+            if (posItemPrice) posItemPrice.focus();
+            return;
+        }
+
+        addItemToCart(currentModalProduct, qty, price);
+        closePosItemModal();
+
+        // Arama kutusunu temizle ve odakla
+        if (posSearchInput) {
+            posSearchInput.value = '';
+            filterAndRenderPosProducts();
+            posSearchInput.focus();
+        }
+    });
+}
+
+// ========================================================
 // SEPET YÖNETİMİ
 // ========================================================
-function addToCart(product) {
+function addItemToCart(product, qty, unitPrice) {
     const existingIndex = cart.findIndex(item => item.product.id === product.id);
-    const unitPrice = getProductEffectivePrice(product);
 
     if (existingIndex > -1) {
-        cart[existingIndex].quantity += 1;
+        cart[existingIndex].quantity += qty;
         cart[existingIndex].unitPrice = unitPrice;
     } else {
         cart.push({
             product: product,
-            quantity: 1,
+            quantity: qty,
             unitPrice: unitPrice
         });
     }
 
     renderCart();
-    showToast(`"${product.name}" sepete eklendi (${formatCurrency(unitPrice)}).`, "info");
+    const lineTotal = qty * unitPrice;
+    showToast(`"${product.name}" sepete eklendi (${qty} ${product.unit || 'Adet'} × ${formatCurrency(unitPrice)} = ${formatCurrency(lineTotal)}).`, "success");
 }
 
 function updateCartItemQuantity(productId, newQty) {
@@ -341,7 +454,10 @@ function renderCart() {
                     <button class="qty-btn btn-plus" data-id="${p.id}"><i class="fa-solid fa-plus"></i></button>
                     <span style="font-size: 0.78rem; color: var(--text-dim); margin-left: 2px;">${p.unit}</span>
                 </div>
-                <div class="cart-item-total">${formatCurrency(lineTotal)}</div>
+                <div class="cart-item-total" style="text-align: right;">
+                    <div style="font-size: 0.74rem; color: var(--text-dim); font-weight: 500;">${formatCurrency(item.unitPrice)} / ${p.unit}</div>
+                    <div style="font-weight: 700; color: var(--text-main);">${formatCurrency(lineTotal)}</div>
+                </div>
             </div>
         `;
 

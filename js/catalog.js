@@ -51,11 +51,12 @@ async function fetchCatalogProducts() {
         // İlk açılışta boşsa ilk 4-6 ürünü afişe otomatik ekle (demo doluluğu)
         if (catalogItems.length === 0 && availableProducts.length > 0) {
             const initialSelection = availableProducts.slice(0, 6);
-            initialSelection.forEach(p => {
+            const demoTags = ['FIRSAT', 'ŞOK FİYAT', 'KAMPANYA', 'ÖZEL FİYAT', 'EN ÇOK SATAN', 'SINIRLI STOK'];
+            initialSelection.forEach((p, idx) => {
                 catalogItems.push({
                     product: p,
                     promoPrice: p.sell_price,
-                    promoTag: 'FIRSAT'
+                    promoTag: demoTags[idx % demoTags.length]
                 });
             });
             renderFlyerGrid();
@@ -97,7 +98,14 @@ if (catalogProductSelect) {
 // Canlı Metin Senkronizasyonu
 if (catalogTitleInput) {
     catalogTitleInput.addEventListener('input', () => {
-        if (flyerDisplayTitle) flyerDisplayTitle.innerHTML = catalogTitleInput.value || 'Nalbur Fırsatları';
+        const val = catalogTitleInput.value.trim() || 'Haftanın Nalbur Fırsatları';
+        const words = val.split(' ');
+        if (words.length > 1) {
+            const last = words.pop();
+            if (flyerDisplayTitle) flyerDisplayTitle.innerHTML = `${words.join(' ')} <span>${last}</span>`;
+        } else {
+            if (flyerDisplayTitle) flyerDisplayTitle.innerHTML = val;
+        }
     });
 }
 if (catalogSubtitleInput) {
@@ -241,6 +249,24 @@ if (catalogCopyWhatsappBtn) {
 // 2. Afişi Yazdır / PDF Olarak İndir
 if (catalogPrintBtn) {
     catalogPrintBtn.addEventListener('click', () => {
-        window.print();
+        if (catalogItems.length === 0) {
+            showToast("Katalogda yazdırılacak ürün bulunmuyor. Lütfen önce ürün ekleyin.", "error");
+            return;
+        }
+
+        // Baskı modunu aktifleştir (Sadece şık A4 katalog sayfası basılacak)
+        document.body.classList.remove('printing-proforma');
+        document.body.classList.add('printing-catalog');
+
+        const cleanUp = () => {
+            document.body.classList.remove('printing-catalog');
+            window.removeEventListener('afterprint', cleanUp);
+        };
+        window.addEventListener('afterprint', cleanUp);
+
+        // Tarayıcı yazdırma diyaloğunu aç
+        setTimeout(() => {
+            window.print();
+        }, 100);
     });
 }

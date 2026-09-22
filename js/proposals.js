@@ -628,7 +628,18 @@ if (proformaModalClose) proformaModalClose.addEventListener('click', closeProfor
 // Yazdır / PDF Butonu
 if (btnPrintProforma) {
     btnPrintProforma.addEventListener('click', () => {
-        window.print();
+        document.body.classList.remove('printing-catalog');
+        document.body.classList.add('printing-proforma');
+
+        const cleanUp = () => {
+            document.body.classList.remove('printing-proforma');
+            window.removeEventListener('afterprint', cleanUp);
+        };
+        window.addEventListener('afterprint', cleanUp);
+
+        setTimeout(() => {
+            window.print();
+        }, 100);
     });
 }
 
