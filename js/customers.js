@@ -532,7 +532,7 @@ function renderCustomerLedger(transactions) {
     if (transactions.length === 0) {
         ledgerTbody.innerHTML = `
             <tr>
-                <td colspan="8" class="empty-state" style="padding: 2rem;">
+                <td colspan="9" class="empty-state" style="padding: 2rem;">
                     <i class="fa-solid fa-folder-open"></i>
                     <p style="margin-top: 0.5rem;">Bu cariye ait henüz bir hareket kaydı bulunmuyor.</p>
                 </td>
@@ -586,12 +586,111 @@ function renderCustomerLedger(transactions) {
             <td style="text-align: right;" class="mono-text">${debt > 0 ? `<span style="color: var(--accent-danger); font-weight: 700;">${formatCurrency(debt)}</span>` : '-'}</td>
             <td style="text-align: right;" class="mono-text">${credit > 0 ? `<span style="color: var(--accent-success); font-weight: 700;">${formatCurrency(credit)}</span>` : '-'}</td>
             <td style="text-align: right;">${balText}</td>
+            <td style="text-align: right;">
+                <button class="btn-table-action delete btn-delete-ledger-trans" title="Bu Hareketi Sil" data-id="${t.id}">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
         `;
+
+        const delBtn = tr.querySelector('.btn-delete-ledger-trans');
+        if (delBtn) {
+            delBtn.addEventListener('click', () => deleteCustomerTransaction(t, true));
+        }
 
         ledgerTbody.appendChild(tr);
     });
 
     renderLedgerBalanceBadge(runningBalance);
+}
+
+export function deleteCustomerTransaction(transaction, isFromLedgerModal = false) {
+    if (!transaction || !transaction.id) return;
+
+    const debt = Number(transaction.debt || 0);
+    const credit = Number(transaction.credit || 0);
+    const custId = transaction.customer_id;
+    const isVeresiye = transaction.payment_method === 'Açık Hesap' || (debt > 0 && credit === 0);
+
+    let balanceAdjustment = 0;
+    let balanceNote = '';
+
+    if (transaction.transaction_type === 'COLLECTION') {
+        const amt = credit > 0 ? credit : Number(transaction.amount || 0);
+        balanceAdjustment = -amt;
+    } else if (transaction.transaction_type === 'PAYMENT') {
+        const amt = debt > 0 ? debt : Number(transaction.amount || 0);
+        balanceAdjustment = +amt;
+    } else if (transaction.transaction_type === 'SALE' && isVeresiye) {
+        const amt = debt > 0 ? debt : Number(transaction.amount || 0);
+        balanceAdjustment = +amt;
+    }
+
+    if (custId && balanceAdjustment !== 0) {
+        if (balanceAdjustment > 0) {
+            balanceNote = ` Bu işlem silindiğinde ilgili carinin borcu ${formatCurrency(balanceAdjustment)} azalacaktır.`;
+        } else {
+            balanceNote = ` Bu işlem silindiğinde ilgili carinin borcu ${formatCurrency(Math.abs(balanceAdjustment))} artacaktır.`;
+        }
+    }
+
+    showConfirmModal({
+        title: "Cari Hareketi Sil",
+        body: `Bu hareket kaydını (${transaction.description || 'Hareket'}) silmek istediğinize emin misiniz?${balanceNote}`,
+        onConfirm: async () => {
+            showLoader();
+            try {
+                // 1. Cari bakiyesi etkileniyorsa geri dengele
+                if (custId && balanceAdjustment !== 0) {
+                    const { data: custData, error: custErr } = await supabase
+                        .from('customers')
+                        .select('id, balance')
+                        .eq('id', custId)
+                        .maybeSingle();
+
+                    if (!custErr && custData) {
+                        const curBal = Number(custData.balance || 0);
+                        const newBal = curBal + balanceAdjustment;
+                        await supabase
+                            .from('customers')
+                            .update({ balance: newBal })
+                            .eq('id', custId);
+
+                        if (activeLedgerCustomer && activeLedgerCustomer.id === custId) {
+                            activeLedgerCustomer.balance = newBal;
+                        }
+                    }
+                }
+
+                // 2. Hareketi sil
+                const { error: delErr } = await supabase
+                    .from('customer_transactions')
+                    .delete()
+                    .eq('id', transaction.id);
+
+                if (delErr) throw delErr;
+
+                showToast("Cari hareket başarıyla silindi.", "success");
+
+                // Cari listesini güncelle
+                await fetchCustomers();
+
+                // Dış modüllere bildir
+                document.dispatchEvent(new CustomEvent('transaction-saved'));
+
+                // Ekstre modalındaysak ekstreyi yeniden yükle
+                if (isFromLedgerModal && activeLedgerCustomer) {
+                    await openCustomerLedgerModal(activeLedgerCustomer);
+                }
+
+            } catch (err) {
+                console.error("Cari hareketi silinirken hata:", err);
+                showToast("Hareket silinemedi: " + (err.message || ''), "error");
+            } finally {
+                hideLoader();
+            }
+        }
+    });
 }
 
 function renderLedgerBalanceBadge(bal) {

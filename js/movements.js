@@ -2,7 +2,7 @@
 // STOK HAREKETLERİ VE GEÇMİŞ MODÜLÜ
 // ========================================================
 
-import { supabase, showLoader, hideLoader, showToast, formatCurrency, formatDateTime } from './supabase.js';
+import { supabase, showLoader, hideLoader, showToast, formatCurrency, formatDateTime, showConfirmModal } from './supabase.js';
 
 // DOM Elemanları
 const movementsTableTbody = document.getElementById('movements-table-tbody');
@@ -13,6 +13,11 @@ let allMovements = [];
 
 // Sayfa Yüklendiğinde Dinle
 document.addEventListener('view-movements-loaded', async () => {
+    await fetchMovements();
+});
+
+// Stok hareketi kaydedildiğinde yenile
+document.addEventListener('movement-saved', async () => {
     await fetchMovements();
 });
 
@@ -59,7 +64,7 @@ function renderMovementsTable(movements) {
     if (movements.length === 0) {
         movementsTableTbody.innerHTML = `
             <tr>
-                <td colspan="8" class="empty-state">
+                <td colspan="9" class="empty-state">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <p>Seçili filtreye uygun stok hareketi bulunamadı.</p>
                 </td>
@@ -112,7 +117,80 @@ function renderMovementsTable(movements) {
             <td class="mono-text" style="color: var(--text-muted);">${m.unit_price ? formatCurrency(m.unit_price) : '-'}</td>
             <td class="mono-text" style="font-weight: 700;">${m.total_price ? formatCurrency(m.total_price) : '-'}</td>
             <td style="font-size: 0.85rem; color: var(--text-dim);">${m.note || '-'}</td>
+            <td style="text-align: right;">
+                <button class="btn-table-action delete btn-delete-movement" title="Bu Stok Hareketini Sil" data-id="${m.id}">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
         `;
+
+        const delBtn = tr.querySelector('.btn-delete-movement');
+        if (delBtn) {
+            delBtn.addEventListener('click', () => confirmDeleteMovement(m));
+        }
+
         movementsTableTbody.appendChild(tr);
+    });
+}
+
+function confirmDeleteMovement(m) {
+    const pName = m.products ? m.products.name : 'Ürün';
+    const isReversible = (m.movement_type === 'IN' || m.movement_type === 'OUT' || m.movement_type === 'WASTE') && m.product_id;
+    let extraNote = '';
+    if (isReversible) {
+        if (m.movement_type === 'OUT' || m.movement_type === 'WASTE') {
+            extraNote = ` Çıkış kaydı silindiği için ${pName} stoğuna +${m.quantity} adet geri iade edilecektir.`;
+        } else if (m.movement_type === 'IN') {
+            extraNote = ` Giriş kaydı silindiği için ${pName} stoğundan -${m.quantity} adet düşülecektir.`;
+        }
+    }
+
+    showConfirmModal({
+        title: "Stok Hareketini Sil",
+        body: `Bu stok hareket kaydını silmek istediğinize emin misiniz?${extraNote}`,
+        onConfirm: async () => {
+            showLoader();
+            try {
+                if (isReversible) {
+                    const { data: prod, error: pErr } = await supabase
+                        .from('products')
+                        .select('id, stock_quantity')
+                        .eq('id', m.product_id)
+                        .maybeSingle();
+
+                    if (!pErr && prod) {
+                        const curQty = Number(prod.stock_quantity || 0);
+                        const moveQty = Number(m.quantity || 0);
+                        let nextQty = curQty;
+                        if (m.movement_type === 'OUT' || m.movement_type === 'WASTE') {
+                            nextQty = curQty + moveQty;
+                        } else if (m.movement_type === 'IN') {
+                            nextQty = Math.max(0, curQty - moveQty);
+                        }
+                        await supabase
+                            .from('products')
+                            .update({ stock_quantity: nextQty })
+                            .eq('id', m.product_id);
+                    }
+                }
+
+                const { error: delErr } = await supabase
+                    .from('stock_movements')
+                    .delete()
+                    .eq('id', m.id);
+
+                if (delErr) throw delErr;
+
+                showToast("Stok hareketi başarıyla silindi.", "success");
+                document.dispatchEvent(new CustomEvent('movement-saved'));
+                document.dispatchEvent(new CustomEvent('product-saved'));
+                await fetchMovements();
+            } catch (err) {
+                console.error("Stok hareketi silinemedi:", err);
+                showToast("Hareket silinirken bir hata oluştu: " + (err.message || ''), "error");
+            } finally {
+                hideLoader();
+            }
+        }
     });
 }

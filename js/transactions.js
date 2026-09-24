@@ -3,7 +3,7 @@
 // ========================================================
 
 import { supabase, showLoader, hideLoader, showToast, formatCurrency, formatDateTime } from './supabase.js';
-import { openTransactionModal, syncSalesToCustomerTransactions } from './customers.js';
+import { openTransactionModal, syncSalesToCustomerTransactions, deleteCustomerTransaction } from './customers.js';
 
 // DOM Elemanları - İstatistik Kartları
 const ctxStatTodayRevenue = document.getElementById('ctx-stat-today-revenue');
@@ -193,7 +193,7 @@ function renderTransactionsTable(items) {
     if (items.length === 0) {
         ctxTableTbody.innerHTML = `
             <tr>
-                <td colspan="9" class="empty-state" style="padding: 2.5rem;">
+                <td colspan="10" class="empty-state" style="padding: 2.5rem;">
                     <i class="fa-solid fa-receipt" style="font-size: 2rem; color: var(--text-dim);"></i>
                     <p style="margin-top: 0.5rem;">Arama kriterlerine uygun cari veya kasa hareketi bulunamadı.</p>
                 </td>
@@ -248,7 +248,17 @@ function renderTransactionsTable(items) {
             <td style="text-align: right;" class="mono-text">${debt > 0 ? `<span style="color: var(--accent-danger); font-weight: 700;">${formatCurrency(debt)}</span>` : '-'}</td>
             <td style="text-align: right;" class="mono-text">${credit > 0 ? `<span style="color: var(--accent-success); font-weight: 700;">${formatCurrency(credit)}</span>` : '-'}</td>
             <td style="text-align: right;" class="mono-text" style="font-weight: 800;">${formatCurrency(amount)}</td>
+            <td style="text-align: right;">
+                <button class="btn-table-action delete btn-delete-transaction" title="Bu Hareketi Sil" data-id="${t.id}">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
         `;
+
+        const delBtn = tr.querySelector('.btn-delete-transaction');
+        if (delBtn) {
+            delBtn.addEventListener('click', () => deleteCustomerTransaction(t, false));
+        }
 
         ctxTableTbody.appendChild(tr);
     });
