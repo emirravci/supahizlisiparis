@@ -1923,9 +1923,7 @@ main.main-content {
     .catalog-builder-container {
         grid-template-columns: 1fr;
     }
-}
 
-@media (max-width: 1024px) {
     .catalog-mobile-tabs {
         display: flex;
     }
@@ -1942,6 +1940,8 @@ main.main-content {
         display: flex !important;
         align-items: center;
         justify-content: center;
+        cursor: pointer !important;
+        touch-action: manipulation !important;
     }
 
     .mobile-only-close-nav-item {
@@ -1959,12 +1959,16 @@ main.main-content {
         justify-content: center;
         border-radius: var(--radius-sm);
         padding: 0.75rem 1rem;
+        cursor: pointer !important;
+        touch-action: manipulation !important;
     }
 
     .mobile-menu-btn {
         display: flex;
         align-items: center;
         justify-content: center;
+        cursor: pointer !important;
+        touch-action: manipulation !important;
     }
 
     aside.sidebar {
@@ -1974,19 +1978,21 @@ main.main-content {
         bottom: 0;
         width: 290px;
         max-width: 85vw;
-        z-index: 9999;
-        transform: translateX(-100%);
+        z-index: 99999 !important;
+        transform: translateX(-100%) !important;
         transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
-        box-shadow: none;
-        visibility: hidden;
-        pointer-events: none;
+        box-shadow: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        display: none !important;
     }
 
     aside.sidebar.mobile-open {
-        transform: translateX(0);
-        box-shadow: 4px 0 35px rgba(0, 0, 0, 0.75);
-        visibility: visible;
-        pointer-events: auto;
+        display: flex !important;
+        transform: translateX(0) !important;
+        box-shadow: 4px 0 35px rgba(0, 0, 0, 0.8) !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
     }
 
     main.main-content {

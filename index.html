@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Proje CSS -->
-    <link rel="stylesheet" href="css/style.css?v=3.5">
+    <link rel="stylesheet" href="css/style.css?v=3.6">
 </head>
 <body>
 
@@ -821,14 +821,14 @@
     <div id="app-container">
 
         <!-- Mobil Çekmece Arka Plan Karartması (Backdrop) -->
-        <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+        <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="window.closeMobileSidebar && window.closeMobileSidebar(event)"></div>
 
         <!-- Masaüstü & Mobil Yan Menü (Sidebar) -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-icon"><i class="fa-solid fa-hammer"></i></div>
                 <div class="sidebar-logo-title">Nalbur<span>Stok</span></div>
-                <button class="btn-icon" id="sidebar-close-btn" title="Menüyü Kapat" aria-label="Kapat">
+                <button class="btn-icon" id="sidebar-close-btn" title="Menüyü Kapat" aria-label="Kapat" onclick="window.closeMobileSidebar && window.closeMobileSidebar(event)">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -862,7 +862,7 @@
                     <button><i class="fa-solid fa-clock-rotate-left"></i><span>Stok Hareketleri</span></button>
                 </li>
                 <li class="nav-item mobile-only-close-nav-item">
-                    <button id="sidebar-bottom-close-btn" style="color: var(--accent-danger);"><i class="fa-solid fa-xmark"></i><span>Menüyü Kapat</span></button>
+                    <button id="sidebar-bottom-close-btn" style="color: var(--accent-danger);" onclick="window.closeMobileSidebar && window.closeMobileSidebar(event)"><i class="fa-solid fa-xmark"></i><span>Menüyü Kapat</span></button>
                 </li>
             </ul>
 
@@ -880,7 +880,7 @@
         <!-- Mobil Üst Bar -->
         <header class="mobile-header">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Menüyü Aç" title="Menü">
+                <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Menüyü Aç" title="Menü" onclick="window.toggleMobileSidebar && window.toggleMobileSidebar(event)">
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="mobile-brand">
@@ -1661,16 +1661,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Modüler Uygulama Scriptleri -->
-    <script src="js/supabase.js?v=3.5" type="module"></script>
-    <script src="js/dashboard.js?v=3.5" type="module"></script>
-    <script src="js/products.js?v=3.5" type="module"></script>
-    <script src="js/pricelists.js?v=3.5" type="module"></script>
-    <script src="js/pos.js?v=3.5" type="module"></script>
-    <script src="js/customers.js?v=3.5" type="module"></script>
-    <script src="js/transactions.js?v=3.5" type="module"></script>
-    <script src="js/proposals.js?v=3.5" type="module"></script>
-    <script src="js/catalog.js?v=3.5" type="module"></script>
-    <script src="js/movements.js?v=3.5" type="module"></script>
+    <script src="js/supabase.js?v=3.6" type="module"></script>
+    <script src="js/dashboard.js?v=3.6" type="module"></script>
+    <script src="js/products.js?v=3.6" type="module"></script>
+    <script src="js/pricelists.js?v=3.6" type="module"></script>
+    <script src="js/pos.js?v=3.6" type="module"></script>
+    <script src="js/customers.js?v=3.6" type="module"></script>
+    <script src="js/transactions.js?v=3.6" type="module"></script>
+    <script src="js/proposals.js?v=3.6" type="module"></script>
+    <script src="js/catalog.js?v=3.6" type="module"></script>
+    <script src="js/movements.js?v=3.6" type="module"></script>
 
 </body>
 </html>

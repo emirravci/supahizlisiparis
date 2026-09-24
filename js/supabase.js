@@ -65,26 +65,53 @@ const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
 const sidebarBottomCloseBtn = document.getElementById('sidebar-bottom-close-btn');
 
-export function openMobileSidebar() {
-    if (appSidebar) appSidebar.classList.add('mobile-open');
-    if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
+export function openMobileSidebar(e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (appSidebar) {
+        appSidebar.classList.add('mobile-open');
+        appSidebar.style.setProperty('display', 'flex', 'important');
+        appSidebar.style.setProperty('transform', 'translateX(0)', 'important');
+        appSidebar.style.setProperty('visibility', 'visible', 'important');
+        appSidebar.style.setProperty('pointer-events', 'auto', 'important');
+    }
+    if (sidebarBackdrop) {
+        sidebarBackdrop.classList.add('active');
+        sidebarBackdrop.style.setProperty('display', 'block', 'important');
+    }
     document.body.style.overflow = 'hidden';
 }
 
-export function closeMobileSidebar() {
-    if (appSidebar) appSidebar.classList.remove('mobile-open');
-    if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+export function closeMobileSidebar(e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (appSidebar) {
+        appSidebar.classList.remove('mobile-open');
+        if (window.innerWidth <= 1100) {
+            appSidebar.style.setProperty('display', 'none', 'important');
+            appSidebar.style.setProperty('transform', 'translateX(-100%)', 'important');
+            appSidebar.style.setProperty('visibility', 'hidden', 'important');
+            appSidebar.style.setProperty('pointer-events', 'none', 'important');
+        }
+    }
+    if (sidebarBackdrop) {
+        sidebarBackdrop.classList.remove('active');
+        sidebarBackdrop.style.setProperty('display', 'none', 'important');
+    }
     document.body.style.overflow = '';
 }
 
 export function toggleMobileSidebar(e) {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-    if (appSidebar && appSidebar.classList.contains('mobile-open')) {
-        closeMobileSidebar();
+    if (appSidebar && (appSidebar.classList.contains('mobile-open') || appSidebar.style.display === 'flex')) {
+        closeMobileSidebar(e);
     } else {
-        openMobileSidebar();
+        openMobileSidebar(e);
     }
 }
+
+// Global window objesine bağla (HTML inline onclick için)
+window.openMobileSidebar = openMobileSidebar;
+window.closeMobileSidebar = closeMobileSidebar;
+window.toggleMobileSidebar = toggleMobileSidebar;
 
 // Dokunmatik ve Tıklama Dinleyicileri (iOS Safari ve Android uyumlu)
 if (mobileMenuToggle) {
@@ -98,26 +125,23 @@ if (mobileMenuToggle) {
 const closeTriggers = [sidebarCloseBtn, sidebarBackdrop, sidebarBottomCloseBtn].filter(Boolean);
 closeTriggers.forEach(el => {
     el.addEventListener('click', (e) => {
-        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-        closeMobileSidebar();
+        closeMobileSidebar(e);
     });
     el.addEventListener('touchend', (e) => {
         e.preventDefault();
-        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-        closeMobileSidebar();
+        closeMobileSidebar(e);
     }, { passive: false });
 });
 
 // ESC tuşu ile menüyü kapat
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeMobileSidebar();
+    if (e.key === 'Escape') closeMobileSidebar(e);
 });
 
 // Menü içindeki herhangi bir butona tıklandığında mobilde otomatik kapat
 if (appSidebar) {
     appSidebar.querySelectorAll('.sidebar-nav button, .sidebar-footer button').forEach(btn => {
         btn.addEventListener('click', () => {
-            // Küçük ekranlarda menüyü otomatik kapat
             if (window.innerWidth <= 1100) {
                 closeMobileSidebar();
             }
@@ -142,13 +166,38 @@ if (appSidebar) {
             const diffX = touchEndX - touchStartX;
             const diffY = Math.abs(touchEndY - touchStartY);
 
-            // Sola doğru en az 40px çekildiyse ve dikey kaydırma aşırı değilse kapat
             if (diffX < -40 && diffY < 80) {
-                closeMobileSidebar();
+                closeMobileSidebar(e);
             }
         }
     }, { passive: true });
 }
+
+// Ekran boyutuna göre başlangıç ve resize kontrolü
+function syncSidebarOnResize() {
+    if (window.innerWidth <= 1100) {
+        if (!appSidebar?.classList.contains('mobile-open')) {
+            closeMobileSidebar();
+        }
+    } else {
+        if (appSidebar) {
+            appSidebar.classList.remove('mobile-open');
+            appSidebar.style.removeProperty('display');
+            appSidebar.style.removeProperty('transform');
+            appSidebar.style.removeProperty('visibility');
+            appSidebar.style.removeProperty('pointer-events');
+        }
+        if (sidebarBackdrop) {
+            sidebarBackdrop.classList.remove('active');
+            sidebarBackdrop.style.removeProperty('display');
+        }
+        document.body.style.overflow = '';
+    }
+}
+
+window.addEventListener('resize', syncSidebarOnResize);
+// İlk yüklemede çalıştır
+syncSidebarOnResize();
 
 // ========================================================
 // GLOBAL LOADER (SPINNER)
