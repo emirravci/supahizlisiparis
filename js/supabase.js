@@ -63,6 +63,7 @@ const appSidebar = document.getElementById('app-sidebar');
 const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+const sidebarBottomCloseBtn = document.getElementById('sidebar-bottom-close-btn');
 
 export function openMobileSidebar() {
     if (appSidebar) appSidebar.classList.add('mobile-open');
@@ -76,7 +77,8 @@ export function closeMobileSidebar() {
     document.body.style.overflow = '';
 }
 
-export function toggleMobileSidebar() {
+export function toggleMobileSidebar(e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     if (appSidebar && appSidebar.classList.contains('mobile-open')) {
         closeMobileSidebar();
     } else {
@@ -84,9 +86,69 @@ export function toggleMobileSidebar() {
     }
 }
 
-if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleMobileSidebar);
-if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeMobileSidebar);
-if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeMobileSidebar);
+// Dokunmatik ve Tıklama Dinleyicileri (iOS Safari ve Android uyumlu)
+if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener('click', toggleMobileSidebar);
+    mobileMenuToggle.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        toggleMobileSidebar(e);
+    }, { passive: false });
+}
+
+const closeTriggers = [sidebarCloseBtn, sidebarBackdrop, sidebarBottomCloseBtn].filter(Boolean);
+closeTriggers.forEach(el => {
+    el.addEventListener('click', (e) => {
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        closeMobileSidebar();
+    });
+    el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        closeMobileSidebar();
+    }, { passive: false });
+});
+
+// ESC tuşu ile menüyü kapat
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMobileSidebar();
+});
+
+// Menü içindeki herhangi bir butona tıklandığında mobilde otomatik kapat
+if (appSidebar) {
+    appSidebar.querySelectorAll('.sidebar-nav button, .sidebar-footer button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Küçük ekranlarda menüyü otomatik kapat
+            if (window.innerWidth <= 1100) {
+                closeMobileSidebar();
+            }
+        });
+    });
+
+    // Parmakla Sola Kaydırma (Swipe-Left) ile Çekmeceyi Kapatma
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    appSidebar.addEventListener('touchstart', (e) => {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            touchStartX = e.changedTouches[0].clientX;
+            touchStartY = e.changedTouches[0].clientY;
+        }
+    }, { passive: true });
+
+    appSidebar.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchEndX - touchStartX;
+            const diffY = Math.abs(touchEndY - touchStartY);
+
+            // Sola doğru en az 40px çekildiyse ve dikey kaydırma aşırı değilse kapat
+            if (diffX < -40 && diffY < 80) {
+                closeMobileSidebar();
+            }
+        }
+    }, { passive: true });
+}
 
 // ========================================================
 // GLOBAL LOADER (SPINNER)

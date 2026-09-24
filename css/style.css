@@ -1857,10 +1857,13 @@ main.main-content {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     z-index: 9998;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     opacity: 0;
     transition: opacity 0.25s ease;
 }
@@ -1872,20 +1875,31 @@ main.main-content {
 
 #sidebar-close-btn {
     display: none;
-    background: transparent;
-    border: none;
-    font-size: 1.25rem;
-    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
+    font-size: 1.15rem;
+    color: var(--text-main);
     cursor: pointer;
-    padding: 6px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
     margin-left: auto;
     border-radius: var(--radius-sm);
     transition: var(--transition);
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
-#sidebar-close-btn:hover {
-    color: var(--accent-danger);
-    background: var(--accent-danger-bg);
+#sidebar-close-btn:hover, #sidebar-close-btn:active {
+    color: #fff;
+    background: var(--accent-danger);
+    border-color: var(--accent-danger);
+}
+
+.mobile-only-close-nav-item {
+    display: none;
 }
 
 .mobile-menu-btn {
@@ -1925,9 +1939,26 @@ main.main-content {
     }
 
     #sidebar-close-btn {
-        display: flex;
+        display: flex !important;
         align-items: center;
         justify-content: center;
+    }
+
+    .mobile-only-close-nav-item {
+        display: block !important;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    .mobile-only-close-nav-item button {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: var(--accent-danger) !important;
+        border: 1px solid rgba(239, 68, 68, 0.25) !important;
+        font-weight: 700;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        padding: 0.75rem 1rem;
     }
 
     .mobile-menu-btn {
@@ -1945,15 +1976,17 @@ main.main-content {
         max-width: 85vw;
         z-index: 9999;
         transform: translateX(-100%);
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
         box-shadow: none;
         visibility: hidden;
+        pointer-events: none;
     }
 
     aside.sidebar.mobile-open {
         transform: translateX(0);
-        box-shadow: 4px 0 30px rgba(0, 0, 0, 0.6);
+        box-shadow: 4px 0 35px rgba(0, 0, 0, 0.75);
         visibility: visible;
+        pointer-events: auto;
     }
 
     main.main-content {
@@ -2021,13 +2054,175 @@ main.main-content {
     }
 }
 
+@media (max-width: 768px) {
+    /* 4 Temel İstatistik Kartı - 2x2 Şık Mobil Grid */
+    .stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.65rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+
+    .stat-card {
+        padding: 0.75rem 0.85rem !important;
+        gap: 0.65rem !important;
+        border-radius: var(--radius-md) !important;
+        min-width: 0;
+    }
+
+    .stat-icon-box {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 1.05rem !important;
+        border-radius: var(--radius-sm) !important;
+    }
+
+    .stat-content {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .stat-label {
+        font-size: 0.7rem !important;
+        line-height: 1.2 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .stat-number {
+        font-size: 1.15rem !important;
+        margin-top: 2px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .dashboard-sections-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+
+    .card-panel-header {
+        padding: 0.85rem 1rem !important;
+    }
+
+    .card-panel-header h3 {
+        font-size: 0.95rem !important;
+    }
+
+    /* Dashboard Tablolarını Mobilde Kart Listesine Dönüştür */
+    .dashboard-sections-grid .table-responsive {
+        overflow-x: visible !important;
+    }
+
+    .dashboard-sections-grid .data-table {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .dashboard-sections-grid .data-table thead {
+        display: none !important;
+    }
+
+    .dashboard-sections-grid .data-table tbody {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.65rem !important;
+        padding: 0.75rem !important;
+    }
+
+    .dashboard-sections-grid .data-table tbody tr.dashboard-table-row {
+        display: block !important;
+        background: var(--bg-surface) !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-radius: var(--radius-md) !important;
+        padding: 0.75rem 0.85rem !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    .dashboard-sections-grid .data-table tbody tr.dashboard-table-row:hover {
+        border-color: var(--accent-primary) !important;
+    }
+
+    .dashboard-sections-grid .data-table td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0.4rem 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        font-size: 0.85rem !important;
+    }
+
+    .dashboard-sections-grid .data-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-dim);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .dashboard-sections-grid .data-table td:last-child {
+        border-bottom: none !important;
+        padding-top: 0.55rem !important;
+    }
+
+    .dashboard-sections-grid .data-table td.dash-action-cell {
+        justify-content: stretch !important;
+    }
+
+    .dashboard-sections-grid .data-table td.dash-action-cell::before {
+        display: none !important;
+    }
+
+    .dashboard-sections-grid .data-table td.dash-action-cell .quick-stock-in-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 0.6rem 1rem !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        border-radius: var(--radius-sm) !important;
+    }
+
+    .dash-prod-name {
+        font-weight: 700;
+        color: var(--text-main);
+        font-size: 0.92rem;
+    }
+
+    .dash-shelf-tag {
+        font-size: 0.75rem;
+        color: var(--accent-primary);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 2px;
+    }
+
+    .dash-stock-alert {
+        color: var(--accent-danger);
+        font-weight: 800;
+        font-size: 0.95rem;
+    }
+}
+
 @media (max-width: 480px) {
     body {
         font-size: 14px;
     }
 
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+
+    .stat-card {
+        padding: 0.65rem 0.75rem !important;
+        gap: 0.5rem !important;
+    }
+
+    .stat-number {
+        font-size: 1.05rem !important;
     }
 
     .modal-card {

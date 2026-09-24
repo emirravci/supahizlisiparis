@@ -182,19 +182,20 @@ function renderCriticalTable(items) {
 
     items.forEach(item => {
         const tr = document.createElement('tr');
+        tr.className = 'dashboard-table-row';
         tr.innerHTML = `
-            <td>
-                <div style="font-weight: 700;">${item.name}</div>
-                <div style="font-size: 0.75rem; color: var(--text-dim);">${item.shelf_location ? 'Raf: ' + item.shelf_location : ''}</div>
+            <td data-label="Ürün">
+                <div class="dash-prod-name">${item.name}</div>
+                ${item.shelf_location ? `<div class="dash-shelf-tag"><i class="fa-solid fa-layer-group"></i> Raf: ${item.shelf_location}</div>` : ''}
             </td>
-            <td><span class="badge badge-amber">${item.category}</span></td>
-            <td>
-                <span class="mono-text" style="color: var(--accent-danger); font-weight: 800;">
+            <td data-label="Kategori"><span class="badge badge-amber">${item.category}</span></td>
+            <td data-label="Kalan Stok">
+                <span class="mono-text dash-stock-alert">
                     ${item.stock_quantity} ${item.unit}
                 </span>
             </td>
-            <td class="mono-text" style="color: var(--text-muted);">${item.min_stock} ${item.unit}</td>
-            <td>
+            <td data-label="Kritik Eşik" class="mono-text dash-min-stock" style="color: var(--text-muted);">${item.min_stock} ${item.unit}</td>
+            <td data-label="İşlem" class="dash-action-cell">
                 <button class="btn btn-sm btn-success quick-stock-in-btn" data-id="${item.id}" data-name="${item.name}" data-unit="${item.unit}" data-stock="${item.stock_quantity}">
                     <i class="fa-solid fa-plus"></i> Giriş Yap
                 </button>
@@ -252,12 +253,13 @@ function renderRecentMovementsTable(movements) {
         }
 
         const tr = document.createElement('tr');
+        tr.className = 'dashboard-table-row';
         tr.innerHTML = `
-            <td style="font-size: 0.82rem; color: var(--text-muted);">${formatDateTime(m.created_at)}</td>
-            <td style="font-weight: 600;">${prodName}</td>
-            <td>${typeBadge}</td>
-            <td class="mono-text" style="font-weight: 700;">${m.quantity} ${unit}</td>
-            <td class="mono-text">${m.total_price ? formatCurrency(m.total_price) : '-'}</td>
+            <td data-label="Tarih" class="dash-date-cell" style="font-size: 0.82rem; color: var(--text-muted);">${formatDateTime(m.created_at)}</td>
+            <td data-label="Ürün" class="dash-prod-cell" style="font-weight: 600;">${prodName}</td>
+            <td data-label="İşlem Türü">${typeBadge}</td>
+            <td data-label="Miktar" class="mono-text dash-qty-cell" style="font-weight: 700;">${m.quantity} ${unit}</td>
+            <td data-label="Tutar" class="mono-text dash-price-cell">${m.total_price ? formatCurrency(m.total_price) : '-'}</td>
         `;
         recentTbody.appendChild(tr);
     });
