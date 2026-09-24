@@ -617,6 +617,33 @@ aside.sidebar {
     transition: var(--transition);
 }
 
+/* Sidebar Kapatıldığında Tam Ekran Düzeni (Hem Laptop Hem Mobil İçin) */
+body.sidebar-collapsed aside.sidebar,
+aside.sidebar.is-closed {
+    display: none !important;
+    transform: translateX(-100%) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+body.sidebar-collapsed main.main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+body.sidebar-collapsed .mobile-header {
+    display: flex !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 500 !important;
+}
+
+body.sidebar-collapsed .mobile-menu-btn {
+    display: flex !important;
+}
+
+
 .sidebar-header {
     height: var(--header-height);
     display: flex;
@@ -1874,7 +1901,7 @@ main.main-content {
 }
 
 #sidebar-close-btn {
-    display: none;
+    display: flex !important;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid var(--border-subtle);
     font-size: 1.15rem;
@@ -1898,9 +1925,43 @@ main.main-content {
     border-color: var(--accent-danger);
 }
 
+.sidebar-close-nav-item,
 .mobile-only-close-nav-item {
-    display: none;
+    display: block !important;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-subtle);
 }
+
+.sidebar-close-nav-item button,
+.mobile-only-close-nav-item button,
+.btn-sidebar-close {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: var(--accent-danger) !important;
+    border: 1px solid rgba(239, 68, 68, 0.25) !important;
+    font-weight: 700 !important;
+    justify-content: center !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.75rem 1rem !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+    width: 100% !important;
+    transition: var(--transition);
+}
+
+.sidebar-close-nav-item button:hover,
+.mobile-only-close-nav-item button:hover,
+.btn-sidebar-close:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border-color: rgba(239, 68, 68, 0.45) !important;
+}
+
+#sidebar-close-btn *,
+#sidebar-bottom-close-btn *,
+#mobile-menu-toggle * {
+    pointer-events: none;
+}
+
 
 .mobile-menu-btn {
     display: none;
@@ -1944,6 +2005,7 @@ main.main-content {
         touch-action: manipulation !important;
     }
 
+    .sidebar-close-nav-item,
     .mobile-only-close-nav-item {
         display: block !important;
         margin-top: 0.75rem;
@@ -1951,7 +2013,9 @@ main.main-content {
         border-top: 1px solid var(--border-subtle);
     }
 
-    .mobile-only-close-nav-item button {
+    .sidebar-close-nav-item button,
+    .mobile-only-close-nav-item button,
+    .btn-sidebar-close {
         background: rgba(239, 68, 68, 0.1) !important;
         color: var(--accent-danger) !important;
         border: 1px solid rgba(239, 68, 68, 0.25) !important;
@@ -1961,6 +2025,7 @@ main.main-content {
         padding: 0.75rem 1rem;
         cursor: pointer !important;
         touch-action: manipulation !important;
+        width: 100% !important;
     }
 
     .mobile-menu-btn {

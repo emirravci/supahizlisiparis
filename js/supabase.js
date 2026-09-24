@@ -57,7 +57,8 @@ const navItems = {
 };
 
 // ========================================================
-// MOBİL ÇEKMECE MENÜ (SIDEBAR DRAWER) YÖNETİMİ
+// ========================================================
+// YAN MENÜ (SIDEBAR) & MOBİL ÇEKMECE YÖNETİMİ
 // ========================================================
 const appSidebar = document.getElementById('app-sidebar');
 const sidebarBackdrop = document.getElementById('sidebar-backdrop');
@@ -65,85 +66,104 @@ const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
 const sidebarBottomCloseBtn = document.getElementById('sidebar-bottom-close-btn');
 
-export function openMobileSidebar(e) {
+export function openSidebar(e) {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    document.body.classList.remove('sidebar-collapsed');
+    document.body.classList.add('sidebar-open');
     if (appSidebar) {
+        appSidebar.classList.remove('is-closed');
         appSidebar.classList.add('mobile-open');
         appSidebar.style.setProperty('display', 'flex', 'important');
         appSidebar.style.setProperty('transform', 'translateX(0)', 'important');
         appSidebar.style.setProperty('visibility', 'visible', 'important');
         appSidebar.style.setProperty('pointer-events', 'auto', 'important');
     }
-    if (sidebarBackdrop) {
+    if (sidebarBackdrop && window.innerWidth <= 1100) {
         sidebarBackdrop.classList.add('active');
         sidebarBackdrop.style.setProperty('display', 'block', 'important');
+        document.body.style.overflow = 'hidden';
     }
-    document.body.style.overflow = 'hidden';
+    try { localStorage.setItem('nalbur_sidebar_collapsed', 'false'); } catch(err){}
 }
 
-export function closeMobileSidebar(e) {
+export function closeSidebar(e) {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    document.body.classList.add('sidebar-collapsed');
+    document.body.classList.remove('sidebar-open');
     if (appSidebar) {
         appSidebar.classList.remove('mobile-open');
-        if (window.innerWidth <= 1100) {
-            appSidebar.style.setProperty('display', 'none', 'important');
-            appSidebar.style.setProperty('transform', 'translateX(-100%)', 'important');
-            appSidebar.style.setProperty('visibility', 'hidden', 'important');
-            appSidebar.style.setProperty('pointer-events', 'none', 'important');
-        }
+        appSidebar.classList.add('is-closed');
+        appSidebar.style.setProperty('display', 'none', 'important');
+        appSidebar.style.setProperty('transform', 'translateX(-100%)', 'important');
+        appSidebar.style.setProperty('visibility', 'hidden', 'important');
+        appSidebar.style.setProperty('pointer-events', 'none', 'important');
     }
     if (sidebarBackdrop) {
         sidebarBackdrop.classList.remove('active');
         sidebarBackdrop.style.setProperty('display', 'none', 'important');
     }
     document.body.style.overflow = '';
+    try { localStorage.setItem('nalbur_sidebar_collapsed', 'true'); } catch(err){}
 }
 
-export function toggleMobileSidebar(e) {
+export function toggleSidebar(e) {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-    if (appSidebar && (appSidebar.classList.contains('mobile-open') || appSidebar.style.display === 'flex')) {
-        closeMobileSidebar(e);
+    const isCollapsed = document.body.classList.contains('sidebar-collapsed') ||
+                        (appSidebar && (appSidebar.classList.contains('is-closed') || appSidebar.style.display === 'none'));
+    if (isCollapsed) {
+        openSidebar(e);
     } else {
-        openMobileSidebar(e);
+        closeSidebar(e);
     }
 }
 
+export const openMobileSidebar = openSidebar;
+export const closeMobileSidebar = closeSidebar;
+export const toggleMobileSidebar = toggleSidebar;
+
 // Global window objesine bağla (HTML inline onclick için)
-window.openMobileSidebar = openMobileSidebar;
-window.closeMobileSidebar = closeMobileSidebar;
-window.toggleMobileSidebar = toggleMobileSidebar;
+window.openSidebar = openSidebar;
+window.closeSidebar = closeSidebar;
+window.toggleSidebar = toggleSidebar;
+window.openMobileSidebar = openSidebar;
+window.closeMobileSidebar = closeSidebar;
+window.toggleMobileSidebar = toggleSidebar;
 
 // Dokunmatik ve Tıklama Dinleyicileri (iOS Safari ve Android uyumlu)
 if (mobileMenuToggle) {
-    mobileMenuToggle.addEventListener('click', toggleMobileSidebar);
+    mobileMenuToggle.addEventListener('click', toggleSidebar);
     mobileMenuToggle.addEventListener('touchend', (e) => {
         e.preventDefault();
-        toggleMobileSidebar(e);
+        toggleSidebar(e);
     }, { passive: false });
 }
 
 const closeTriggers = [sidebarCloseBtn, sidebarBackdrop, sidebarBottomCloseBtn].filter(Boolean);
 closeTriggers.forEach(el => {
     el.addEventListener('click', (e) => {
-        closeMobileSidebar(e);
+        closeSidebar(e);
     });
     el.addEventListener('touchend', (e) => {
         e.preventDefault();
-        closeMobileSidebar(e);
+        closeSidebar(e);
     }, { passive: false });
 });
 
 // ESC tuşu ile menüyü kapat
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeMobileSidebar(e);
+    if (e.key === 'Escape') closeSidebar(e);
 });
 
 // Menü içindeki herhangi bir butona tıklandığında mobilde otomatik kapat
 if (appSidebar) {
     appSidebar.querySelectorAll('.sidebar-nav button, .sidebar-footer button').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            if (btn.id === 'sidebar-bottom-close-btn') {
+                closeSidebar(e);
+                return;
+            }
             if (window.innerWidth <= 1100) {
-                closeMobileSidebar();
+                closeSidebar(e);
             }
         });
     });
@@ -167,7 +187,7 @@ if (appSidebar) {
             const diffY = Math.abs(touchEndY - touchStartY);
 
             if (diffX < -40 && diffY < 80) {
-                closeMobileSidebar(e);
+                closeSidebar(e);
             }
         }
     }, { passive: true });
@@ -175,23 +195,22 @@ if (appSidebar) {
 
 // Ekran boyutuna göre başlangıç ve resize kontrolü
 function syncSidebarOnResize() {
+    const isSavedCollapsed = localStorage.getItem('nalbur_sidebar_collapsed') === 'true';
     if (window.innerWidth <= 1100) {
         if (!appSidebar?.classList.contains('mobile-open')) {
-            closeMobileSidebar();
+            closeSidebar();
         }
     } else {
-        if (appSidebar) {
-            appSidebar.classList.remove('mobile-open');
-            appSidebar.style.removeProperty('display');
-            appSidebar.style.removeProperty('transform');
-            appSidebar.style.removeProperty('visibility');
-            appSidebar.style.removeProperty('pointer-events');
+        if (isSavedCollapsed) {
+            closeSidebar();
+        } else {
+            openSidebar();
+            if (sidebarBackdrop) {
+                sidebarBackdrop.classList.remove('active');
+                sidebarBackdrop.style.setProperty('display', 'none', 'important');
+            }
+            document.body.style.overflow = '';
         }
-        if (sidebarBackdrop) {
-            sidebarBackdrop.classList.remove('active');
-            sidebarBackdrop.style.removeProperty('display');
-        }
-        document.body.style.overflow = '';
     }
 }
 
@@ -312,8 +331,10 @@ export function showView(viewId, extraData = null) {
         }
     } catch (e) {}
 
-    // Mobil çekmece açıksa otomatik kapat
-    closeMobileSidebar();
+    // Mobilde görünüm değiştiğinde çekmeceyi otomatik kapat
+    if (window.innerWidth <= 1100) {
+        closeSidebar();
+    }
 
     // Sayfa yukarı kaydırılsın
     window.scrollTo({ top: 0, behavior: 'smooth' });

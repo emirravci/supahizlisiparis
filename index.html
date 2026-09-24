@@ -9,7 +9,68 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Proje CSS -->
-    <link rel="stylesheet" href="css/style.css?v=3.6">
+    <link rel="stylesheet" href="css/style.css?v=4.0">
+
+    <!-- Global Senkron Menü Scripti (Hem Laptop Hem Mobil Garantili Kapatma) -->
+    <script>
+        window.closeSidebar = function(e) {
+            if (e && e.stopPropagation) e.stopPropagation();
+            document.body.classList.add('sidebar-collapsed');
+            document.body.classList.remove('sidebar-open');
+            var sb = document.getElementById('app-sidebar');
+            if (sb) {
+                sb.classList.remove('mobile-open');
+                sb.classList.add('is-closed');
+                sb.style.setProperty('display', 'none', 'important');
+            }
+            var bd = document.getElementById('sidebar-backdrop');
+            if (bd) {
+                bd.classList.remove('active');
+                bd.style.setProperty('display', 'none', 'important');
+            }
+            document.body.style.overflow = '';
+            try { localStorage.setItem('nalbur_sidebar_collapsed', 'true'); } catch(err){}
+        };
+        window.openSidebar = function(e) {
+            if (e && e.stopPropagation) e.stopPropagation();
+            document.body.classList.remove('sidebar-collapsed');
+            document.body.classList.add('sidebar-open');
+            var sb = document.getElementById('app-sidebar');
+            if (sb) {
+                sb.classList.add('mobile-open');
+                sb.classList.remove('is-closed');
+                sb.style.setProperty('display', 'flex', 'important');
+            }
+            var bd = document.getElementById('sidebar-backdrop');
+            if (bd && window.innerWidth <= 1100) {
+                bd.classList.add('active');
+                bd.style.setProperty('display', 'block', 'important');
+                document.body.style.overflow = 'hidden';
+            }
+            try { localStorage.setItem('nalbur_sidebar_collapsed', 'false'); } catch(err){}
+        };
+        window.toggleSidebar = function(e) {
+            if (e && e.stopPropagation) e.stopPropagation();
+            var isCollapsed = document.body.classList.contains('sidebar-collapsed');
+            var sb = document.getElementById('app-sidebar');
+            var isOpen = sb && (sb.classList.contains('mobile-open') || sb.style.display === 'flex' || (!isCollapsed && window.innerWidth > 1100));
+            if (isOpen) {
+                window.closeSidebar(e);
+            } else {
+                window.openSidebar(e);
+            }
+        };
+        window.closeMobileSidebar = window.closeSidebar;
+        window.openMobileSidebar = window.openSidebar;
+        window.toggleMobileSidebar = window.toggleSidebar;
+
+        // Sayfa açılışında mobil ise kapalı başlat
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth <= 1100 || localStorage.getItem('nalbur_sidebar_collapsed') === 'true') {
+                window.closeSidebar();
+            }
+        });
+    </script>
 </head>
 <body>
 
@@ -821,14 +882,14 @@
     <div id="app-container">
 
         <!-- Mobil Çekmece Arka Plan Karartması (Backdrop) -->
-        <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="window.closeMobileSidebar && window.closeMobileSidebar(event)"></div>
+        <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="window.closeSidebar(event)"></div>
 
         <!-- Masaüstü & Mobil Yan Menü (Sidebar) -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-icon"><i class="fa-solid fa-hammer"></i></div>
                 <div class="sidebar-logo-title">Nalbur<span>Stok</span></div>
-                <button class="btn-icon" id="sidebar-close-btn" title="Menüyü Kapat" aria-label="Kapat" onclick="window.closeMobileSidebar && window.closeMobileSidebar(event)">
+                <button class="btn-icon" id="sidebar-close-btn" title="Menüyü Kapat" aria-label="Kapat" onclick="window.closeSidebar(event)">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -861,8 +922,8 @@
                 <li class="nav-item" id="nav-movements">
                     <button><i class="fa-solid fa-clock-rotate-left"></i><span>Stok Hareketleri</span></button>
                 </li>
-                <li class="nav-item mobile-only-close-nav-item">
-                    <button id="sidebar-bottom-close-btn" style="color: var(--accent-danger);" onclick="window.closeMobileSidebar && window.closeMobileSidebar(event)"><i class="fa-solid fa-xmark"></i><span>Menüyü Kapat</span></button>
+                <li class="nav-item sidebar-close-nav-item">
+                    <button id="sidebar-bottom-close-btn" class="btn-sidebar-close" onclick="window.closeSidebar(event)"><i class="fa-solid fa-xmark"></i><span>Menüyü Kapat</span></button>
                 </li>
             </ul>
 
@@ -877,15 +938,15 @@
             </div>
         </aside>
 
-        <!-- Mobil Üst Bar -->
+        <!-- Mobil / Laptop Üst Bar (Menü Kapalıyken de Görünür) -->
         <header class="mobile-header">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Menüyü Aç" title="Menü" onclick="window.toggleMobileSidebar && window.toggleMobileSidebar(event)">
+                <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Menüyü Aç" title="Menü" onclick="window.toggleSidebar(event)">
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="mobile-brand">
                     <i class="fa-solid fa-hammer" style="color: var(--accent-primary);"></i>
-                    <span>NalSto</span>
+                    <span>NalburStok</span>
                 </div>
             </div>
             <button class="btn-icon-logout" id="btn-logout-mobile" title="Çıkış Yap">
@@ -1661,16 +1722,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Modüler Uygulama Scriptleri -->
-    <script src="js/supabase.js?v=3.6" type="module"></script>
-    <script src="js/dashboard.js?v=3.6" type="module"></script>
-    <script src="js/products.js?v=3.6" type="module"></script>
-    <script src="js/pricelists.js?v=3.6" type="module"></script>
-    <script src="js/pos.js?v=3.6" type="module"></script>
-    <script src="js/customers.js?v=3.6" type="module"></script>
-    <script src="js/transactions.js?v=3.6" type="module"></script>
-    <script src="js/proposals.js?v=3.6" type="module"></script>
-    <script src="js/catalog.js?v=3.6" type="module"></script>
-    <script src="js/movements.js?v=3.6" type="module"></script>
+    <script src="js/supabase.js?v=4.0" type="module"></script>
+    <script src="js/dashboard.js?v=4.0" type="module"></script>
+    <script src="js/products.js?v=4.0" type="module"></script>
+    <script src="js/pricelists.js?v=4.0" type="module"></script>
+    <script src="js/pos.js?v=4.0" type="module"></script>
+    <script src="js/customers.js?v=4.0" type="module"></script>
+    <script src="js/transactions.js?v=4.0" type="module"></script>
+    <script src="js/proposals.js?v=4.0" type="module"></script>
+    <script src="js/catalog.js?v=4.0" type="module"></script>
+    <script src="js/movements.js?v=4.0" type="module"></script>
 
 </body>
 </html>
