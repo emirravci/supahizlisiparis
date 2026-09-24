@@ -249,22 +249,22 @@ function renderProposalsTable(proposals) {
         }
 
         tr.innerHTML = `
-            <td>
+            <td data-label="Teklif No">
                 <span class="mono-text" style="font-weight: 700; color: var(--accent-primary);">
                     ${p.proposal_no}
                 </span>
                 <div style="font-size: 0.72rem; color: var(--text-dim);">${p.type === 'ORDER' ? 'Sipariş' : 'Proforma Teklif'}</div>
             </td>
-            <td>
+            <td data-label="Müşteri">
                 <div style="font-weight: 700;">${p.customer_name}</div>
                 ${p.customer_phone ? `<div style="font-size: 0.75rem; color: var(--text-dim);">${p.customer_phone}</div>` : ''}
             </td>
-            <td style="font-size: 0.85rem; color: var(--text-muted);">${formatDateOnly(p.issue_date)}</td>
-            <td style="font-size: 0.85rem; color: var(--text-muted);">${p.valid_until ? formatDateOnly(p.valid_until) : '-'}</td>
-            <td class="mono-text" style="font-weight: 800; font-size: 1rem; color: var(--accent-success);">
+            <td data-label="Tarih" style="font-size: 0.85rem; color: var(--text-muted);">${formatDateOnly(p.issue_date)}</td>
+            <td data-label="Geçerlilik" style="font-size: 0.85rem; color: var(--text-muted);">${p.valid_until ? formatDateOnly(p.valid_until) : '-'}</td>
+            <td data-label="Tutar (KDV Dahil)" class="mono-text" style="font-weight: 800; font-size: 1rem; color: var(--accent-success);">
                 ${formatCurrency(p.total_amount)}
             </td>
-            <td>${statusBadge}</td>
+            <td data-label="Durum">${statusBadge}</td>
             <td>
                 <div class="action-buttons">
                     <button class="btn-table-action" title="Proforma Yazdır / Görüntüle" data-action="view-proforma" data-id="${p.id}" style="color: var(--accent-primary);">

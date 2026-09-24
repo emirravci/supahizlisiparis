@@ -239,16 +239,16 @@ function renderTransactionsTable(items) {
                </div>`;
 
         tr.innerHTML = `
-            <td style="font-size: 0.82rem; white-space: nowrap;">${formatDateTime(t.created_at)}</td>
-            <td>${customerName}</td>
-            <td>${typeBadge}</td>
-            <td>${methodBadge}</td>
-            <td><span class="mono-text" style="font-size: 0.8rem; color: var(--text-dim);">${t.receipt_no || '-'}</span></td>
-            <td style="font-size: 0.85rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.description || ''}">${t.description || '-'}</td>
-            <td style="text-align: right;" class="mono-text">${debt > 0 ? `<span style="color: var(--accent-danger); font-weight: 700;">${formatCurrency(debt)}</span>` : '-'}</td>
-            <td style="text-align: right;" class="mono-text">${credit > 0 ? `<span style="color: var(--accent-success); font-weight: 700;">${formatCurrency(credit)}</span>` : '-'}</td>
-            <td style="text-align: right;" class="mono-text" style="font-weight: 800;">${formatCurrency(amount)}</td>
-            <td style="text-align: right;">
+            <td data-label="Tarih" style="font-size: 0.82rem; white-space: nowrap;">${formatDateTime(t.created_at)}</td>
+            <td data-label="Cari">${customerName}</td>
+            <td data-label="Tür">${typeBadge}</td>
+            <td data-label="Yöntem">${methodBadge}</td>
+            <td data-label="Fiş No"><span class="mono-text" style="font-size: 0.8rem; color: var(--text-dim);">${t.receipt_no || '-'}</span></td>
+            <td data-label="Açıklama" style="font-size: 0.85rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.description || ''}">${t.description || '-'}</td>
+            <td data-label="Borç" style="text-align: right;" class="mono-text">${debt > 0 ? `<span style="color: var(--accent-danger); font-weight: 700;">${formatCurrency(debt)}</span>` : '-'}</td>
+            <td data-label="Alacak" style="text-align: right;" class="mono-text">${credit > 0 ? `<span style="color: var(--accent-success); font-weight: 700;">${formatCurrency(credit)}</span>` : '-'}</td>
+            <td data-label="Tutar" style="text-align: right;" class="mono-text">${formatCurrency(amount)}</td>
+            <td>
                 <button class="btn-table-action delete btn-delete-transaction" title="Bu Hareketi Sil" data-id="${t.id}">
                     <i class="fa-solid fa-trash"></i>
                 </button>

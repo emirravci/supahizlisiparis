@@ -125,23 +125,23 @@ function renderCustomersTable(customers) {
         }
 
         tr.innerHTML = `
-            <td>
+            <td data-label="Firma / Usta Adı">
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <span style="font-weight: 700; color: ${isGenel ? 'var(--accent-primary)' : 'var(--text-main)'};">${c.name}</span>
                     ${isGenel ? '<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-primary); font-size: 0.7rem; padding: 2px 6px;">Varsayılan</span>' : ''}
                 </div>
                 ${c.address ? `<div style="font-size: 0.76rem; color: var(--text-dim); margin-top: 2px;">${c.address}</div>` : ''}
             </td>
-            <td>${typeBadge}</td>
-            <td>
+            <td data-label="Tür">${typeBadge}</td>
+            <td data-label="Telefon">
                 ${c.phone ? `<a href="tel:${c.phone}" style="color: var(--accent-primary); font-weight: 600;"><i class="fa-solid fa-phone" style="font-size: 0.75rem;"></i> ${c.phone}</a>` : '-'}
             </td>
-            <td><span style="font-size: 0.85rem; color: var(--text-muted);">${c.city || '-'}</span></td>
-            <td>
+            <td data-label="İl / İlçe"><span style="font-size: 0.85rem; color: var(--text-muted);">${c.city || '-'}</span></td>
+            <td data-label="Vergi Bilgisi">
                 <div style="font-size: 0.82rem; color: var(--text-muted);">${c.tax_office || '-'}</div>
                 <div class="mono-text" style="font-size: 0.75rem; color: var(--text-dim);">${c.tax_number || ''}</div>
             </td>
-            <td>${balBadge}</td>
+            <td data-label="Bakiye">${balBadge}</td>
             <td>
                 <div class="action-buttons">
                     <button class="btn-table-action" title="Cari Ekstresi & Hareketler" data-action="ledger" data-id="${c.id}" style="color: #6366f1;">

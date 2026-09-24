@@ -161,26 +161,26 @@ function renderProductsTable(products) {
         const isCritical = Number(p.stock_quantity) <= Number(p.min_stock);
 
         tr.innerHTML = `
-            <td>
+            <td data-label="Barkod">
                 <span class="mono-text" style="font-size: 0.82rem; color: var(--text-dim);">
                     ${p.barcode || '-'}
                 </span>
             </td>
-            <td>
+            <td data-label="Ürün Adı">
                 <div style="font-weight: 700; color: var(--text-main);">${p.name}</div>
                 ${p.notes ? `<div style="font-size: 0.76rem; color: var(--text-dim); margin-top: 2px;">${p.notes}</div>` : ''}
             </td>
-            <td><span class="badge badge-amber">${p.category}</span></td>
-            <td><span style="font-size: 0.85rem; color: var(--text-muted);">${p.shelf_location || '-'}</span></td>
-            <td class="mono-text">${formatCurrency(p.buy_price)}</td>
-            <td class="mono-text" style="font-weight: 700; color: var(--accent-primary);">${formatCurrency(p.sell_price)}</td>
-            <td>
+            <td data-label="Kategori"><span class="badge badge-amber">${p.category}</span></td>
+            <td data-label="Raf"><span style="font-size: 0.85rem; color: var(--text-muted);">${p.shelf_location || '-'}</span></td>
+            <td data-label="Alış (₺)" class="mono-text">${formatCurrency(p.buy_price)}</td>
+            <td data-label="Satış (₺)" class="mono-text" style="font-weight: 700; color: var(--accent-primary);">${formatCurrency(p.sell_price)}</td>
+            <td data-label="Stok">
                 <span class="mono-text" style="font-weight: 800; font-size: 0.95rem; color: ${isCritical ? 'var(--accent-danger)' : 'var(--accent-success)'};">
                     ${p.stock_quantity} ${p.unit}
                 </span>
                 ${isCritical ? '<i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-danger); font-size: 0.8rem; margin-left: 4px;" title="Kritik Stok!"></i>' : ''}
             </td>
-            <td class="mono-text" style="color: var(--text-muted); font-size: 0.85rem;">
+            <td data-label="Kritik" class="mono-text" style="color: var(--text-muted); font-size: 0.85rem;">
                 ${p.min_stock} ${p.unit}
             </td>
             <td>

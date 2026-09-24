@@ -102,22 +102,22 @@ function renderMovementsTable(movements) {
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td style="font-size: 0.82rem; color: var(--text-muted);">${formatDateTime(m.created_at)}</td>
-            <td>
+            <td data-label="Tarih" style="font-size: 0.82rem; color: var(--text-muted);">${formatDateTime(m.created_at)}</td>
+            <td data-label="Ürün">
                 <div style="font-weight: 700; color: var(--text-main);">${pName}</div>
                 ${m.products && m.products.barcode ? `<span class="mono-text" style="font-size: 0.72rem; color: var(--text-dim);">${m.products.barcode}</span>` : ''}
             </td>
-            <td><span class="badge badge-amber">${pCat}</span></td>
-            <td>${badge}</td>
-            <td>
+            <td data-label="Kategori"><span class="badge badge-amber">${pCat}</span></td>
+            <td data-label="Tür">${badge}</td>
+            <td data-label="Miktar">
                 <span class="mono-text" style="font-weight: 800; font-size: 0.95rem; color: ${qtyColor};">
                     ${sign}${m.quantity} ${pUnit}
                 </span>
             </td>
-            <td class="mono-text" style="color: var(--text-muted);">${m.unit_price ? formatCurrency(m.unit_price) : '-'}</td>
-            <td class="mono-text" style="font-weight: 700;">${m.total_price ? formatCurrency(m.total_price) : '-'}</td>
-            <td style="font-size: 0.85rem; color: var(--text-dim);">${m.note || '-'}</td>
-            <td style="text-align: right;">
+            <td data-label="Birim Fiyat" class="mono-text" style="color: var(--text-muted);">${m.unit_price ? formatCurrency(m.unit_price) : '-'}</td>
+            <td data-label="Toplam" class="mono-text" style="font-weight: 700;">${m.total_price ? formatCurrency(m.total_price) : '-'}</td>
+            <td data-label="Not" style="font-size: 0.85rem; color: var(--text-dim);">${m.note || '-'}</td>
+            <td>
                 <button class="btn-table-action delete btn-delete-movement" title="Bu Stok Hareketini Sil" data-id="${m.id}">
                     <i class="fa-solid fa-trash"></i>
                 </button>
