@@ -57,165 +57,26 @@ const navItems = {
 };
 
 // ========================================================
+// YAN MENÜ (SIDEBAR) - BASİT, TOGGLE YOK
+// Masaüstünde sidebar her zaman açık.
+// Mobilede sidebar yoktur, alt menü çubuğu kullanılır.
 // ========================================================
-// YAN MENÜ (SIDEBAR) & MOBİL ÇEKMECE YÖNETİMİ
-// ========================================================
-const appSidebar = document.getElementById('app-sidebar');
-const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
-const sidebarBottomCloseBtn = document.getElementById('sidebar-bottom-close-btn');
-const mNavMenuBtn = document.getElementById('m-nav-menu');
 
 export function isMobile() {
     return window.innerWidth <= 1024;
 }
 
-export function openSidebar(e) {
-    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-
-    if (isMobile()) {
-        document.body.classList.add('sidebar-open');
-        document.body.style.overflow = 'hidden';
-    } else {
-        document.documentElement.classList.remove('sidebar-collapsed');
-        document.body.classList.remove('sidebar-collapsed');
-        try { localStorage.setItem('nalbur_sidebar_collapsed', 'false'); } catch (err) {}
-    }
-}
-
-export function closeSidebar(e) {
-    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-
-    if (isMobile()) {
-        document.body.classList.remove('sidebar-open');
-        document.body.style.overflow = '';
-    } else {
-        document.documentElement.classList.add('sidebar-collapsed');
-        document.body.classList.add('sidebar-collapsed');
-        try { localStorage.setItem('nalbur_sidebar_collapsed', 'true'); } catch (err) {}
-    }
-}
-
-export function toggleSidebar(e) {
-    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-
-    if (isMobile()) {
-        if (document.body.classList.contains('sidebar-open')) {
-            closeSidebar(e);
-        } else {
-            openSidebar(e);
-        }
-    } else {
-        const isCollapsed = document.body.classList.contains('sidebar-collapsed') ||
-                            document.documentElement.classList.contains('sidebar-collapsed');
-        if (isCollapsed) {
-            openSidebar(e);
-        } else {
-            closeSidebar(e);
-        }
-    }
-}
-
+// Stub fonksiyonlar - diğer modüller import ediyor olabilir, boş bırakıyoruz
+export function openSidebar() {}
+export function closeSidebar() {}
+export function toggleSidebar() {}
 export const openMobileSidebar = openSidebar;
 export const closeMobileSidebar = closeSidebar;
 export const toggleMobileSidebar = toggleSidebar;
 
-// Global window objesine bağla (Geriye dönük uyumluluk)
 window.openSidebar = openSidebar;
 window.closeSidebar = closeSidebar;
 window.toggleSidebar = toggleSidebar;
-window.openMobileSidebar = openSidebar;
-window.closeMobileSidebar = closeSidebar;
-window.toggleMobileSidebar = toggleSidebar;
-
-// Buton Olay Dinleyicileri (Tekil ve Güvenli Bağlama)
-if (mobileMenuToggle) {
-    mobileMenuToggle.addEventListener('click', toggleSidebar);
-}
-if (sidebarCloseBtn) {
-    sidebarCloseBtn.addEventListener('click', closeSidebar);
-}
-if (sidebarBottomCloseBtn) {
-    sidebarBottomCloseBtn.addEventListener('click', closeSidebar);
-}
-if (sidebarBackdrop) {
-    sidebarBackdrop.addEventListener('click', closeSidebar);
-}
-if (mNavMenuBtn) {
-    mNavMenuBtn.addEventListener('click', toggleSidebar);
-}
-
-// Klavye Kısayolları (ESC ile Kapat, Ctrl+B veya Alt+M ile Aç/Kapat)
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeSidebar(e);
-    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
-        e.preventDefault();
-        toggleSidebar(e);
-    } else if (e.altKey && e.key.toLowerCase() === 'm') {
-        e.preventDefault();
-        toggleSidebar(e);
-    }
-});
-
-// Menü içindeki herhangi bir linke tıklandığında mobilde otomatik kapat
-if (appSidebar) {
-    appSidebar.querySelectorAll('.sidebar-nav button, .sidebar-footer button').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            if (btn.id === 'sidebar-bottom-close-btn') {
-                closeSidebar(e);
-                return;
-            }
-            if (isMobile()) {
-                closeSidebar(e);
-            }
-        });
-    });
-
-    // Parmakla Sola Kaydırma (Swipe-Left) ile Çekmeceyi Kapatma
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    appSidebar.addEventListener('touchstart', (e) => {
-        if (e.changedTouches && e.changedTouches.length > 0) {
-            touchStartX = e.changedTouches[0].clientX;
-            touchStartY = e.changedTouches[0].clientY;
-        }
-    }, { passive: true });
-
-    appSidebar.addEventListener('touchend', (e) => {
-        if (e.changedTouches && e.changedTouches.length > 0) {
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-            const diffX = touchEndX - touchStartX;
-            const diffY = Math.abs(touchEndY - touchStartY);
-
-            if (diffX < -40 && diffY < 80) {
-                closeSidebar(e);
-            }
-        }
-    }, { passive: true });
-}
-
-// Başlangıç Masaüstü Tercihi Uygulama (Sayfa yenilendiğinde)
-if (!isMobile()) {
-    if (localStorage.getItem('nalbur_sidebar_collapsed') === 'true') {
-        document.documentElement.classList.add('sidebar-collapsed');
-        document.body.classList.add('sidebar-collapsed');
-    } else {
-        document.documentElement.classList.remove('sidebar-collapsed');
-        document.body.classList.remove('sidebar-collapsed');
-    }
-}
-
-// Ekran genişliği değiştiğinde masaüstüne geçildiyse mobil kilidi temizle
-window.addEventListener('resize', () => {
-    if (!isMobile()) {
-        document.body.classList.remove('sidebar-open');
-        document.body.style.overflow = '';
-    }
-});
 
 // ========================================================
 // GLOBAL LOADER (SPINNER)
@@ -330,10 +191,6 @@ export function showView(viewId, extraData = null) {
         }
     } catch (e) {}
 
-    // Mobilde görünüm değiştiğinde çekmeceyi otomatik kapat
-    if (isMobile()) {
-        closeSidebar();
-    }
 
     // Sayfa yukarı kaydırılsın
     window.scrollTo({ top: 0, behavior: 'smooth' });
