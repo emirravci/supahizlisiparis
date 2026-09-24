@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Proje CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=3.2">
 </head>
 <body>
 
@@ -755,6 +755,32 @@
         </div>
     </div>
 
+    <!-- 13. DİJİTAL AFİŞ TAM EKRAN ÖNİZLEME MODALI -->
+    <div class="modal-overlay" id="catalog-preview-modal">
+        <div class="modal-card" style="max-width: 900px; width: 95%;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-pdf" style="color: var(--accent-primary);"></i> Afiş Broşür Önizleme</h3>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button type="button" class="btn btn-sm btn-primary" id="catalog-modal-print-btn">
+                        <i class="fa-solid fa-print"></i> PDF Olarak İndir / Yazdır
+                    </button>
+                    <button type="button" class="modal-close-btn" id="catalog-preview-modal-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div class="modal-body" style="padding: 1.25rem; background: var(--bg-body); overflow-y: auto; max-height: 80vh;">
+                <div id="catalog-modal-flyer-container">
+                    <!-- Dinamik olarak afiş buraya klonlanacak -->
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="catalog-preview-modal-cancel">Kapat</button>
+                <button type="button" class="btn btn-primary" id="catalog-preview-modal-print-bottom">
+                    <i class="fa-solid fa-print"></i> PDF / Yazdır
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========================================================
          9. GİRİŞ EKRANI (AUTH VIEW)
          ======================================================== -->
@@ -1305,6 +1331,9 @@
                         <p>Nalbur ürünlerinizle Instagram, WhatsApp ve Facebook'ta paylaşmalık şık fiyatlı afiş ve broşür hazırlayın</p>
                     </div>
                     <div class="view-header-actions">
+                        <button class="btn btn-secondary" id="catalog-preview-modal-btn">
+                            <i class="fa-solid fa-eye"></i> Afişi Önizle
+                        </button>
                         <button class="btn btn-whatsapp" id="catalog-copy-whatsapp-btn">
                             <i class="fa-brands fa-whatsapp"></i> Metni WhatsApp İçin Kopyala
                         </button>
@@ -1314,7 +1343,17 @@
                     </div>
                 </div>
 
-                <div class="catalog-builder-container">
+                <!-- Mobil Cihazlar İçin Sekme Seçimi -->
+                <div class="catalog-mobile-tabs">
+                    <button type="button" class="catalog-tab-btn active" id="tab-btn-catalog-settings">
+                        <i class="fa-solid fa-sliders"></i> Afiş Ayarları & Ürün Ekle
+                    </button>
+                    <button type="button" class="catalog-tab-btn" id="tab-btn-catalog-view">
+                        <i class="fa-solid fa-file-image"></i> Afişi Gör (Canlı)
+                    </button>
+                </div>
+
+                <div class="catalog-builder-container tab-view-settings">
                     
                     <!-- Sol Taraf: Katalog Ayarları & Ürün Seçici -->
                     <div class="catalog-sidebar-panel">
@@ -1373,7 +1412,7 @@
                     </div>
 
                     <!-- Sağ Taraf: Canlı Afiş / Broşür Önizlemesi -->
-                    <div>
+                    <div class="catalog-flyer-column">
                         <div class="catalog-flyer" id="catalog-flyer-preview">
                             <div class="catalog-flyer-header">
                                 <div class="catalog-badge-top">🔥 GÜNCEL FİYAT BÜLTENİ</div>
@@ -1624,7 +1663,7 @@
     <script src="js/customers.js" type="module"></script>
     <script src="js/transactions.js" type="module"></script>
     <script src="js/proposals.js" type="module"></script>
-    <script src="js/catalog.js" type="module"></script>
+    <script src="js/catalog.js?v=3.2" type="module"></script>
     <script src="js/movements.js" type="module"></script>
 
 </body>
