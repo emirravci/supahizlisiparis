@@ -3,7 +3,7 @@
 // ========================================================
 
 import { supabase, showLoader, hideLoader, showToast, formatCurrency, formatDateTime } from './supabase.js';
-import { openTransactionModal } from './customers.js';
+import { openTransactionModal, syncSalesToCustomerTransactions } from './customers.js';
 
 // DOM Elemanları - İstatistik Kartları
 const ctxStatTodayRevenue = document.getElementById('ctx-stat-today-revenue');
@@ -49,6 +49,9 @@ export async function fetchTransactionsData() {
     if (!supabase) return;
     showLoader();
     try {
+        // Hızlı satışları cari hareketlerle senkronize et
+        await syncSalesToCustomerTransactions();
+
         // Bugünün başlangıcı
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
@@ -223,10 +226,17 @@ function renderTransactionsTable(items) {
         let methodBadge = `<span class="badge" style="background: var(--bg-input); font-size: 0.78rem;">${t.payment_method || 'Nakit'}</span>`;
 
         // Cari Adı
+        const isGenel = (t.customers?.name || '').toLowerCase() === 'genel' || !t.customers;
         const customerName = t.customers?.name 
-            ? `<div style="font-weight: 700; color: var(--text-main);">${t.customers.name}</div>
+            ? `<div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-weight: 700; color: ${isGenel ? 'var(--accent-primary)' : 'var(--text-main)'};">${t.customers.name}</span>
+                ${isGenel ? '<span class="badge" style="font-size: 0.68rem; background: rgba(245, 158, 11, 0.15); color: var(--accent-primary); padding: 1px 5px;">Genel Cari</span>' : ''}
+               </div>
                ${t.customers.phone ? `<div style="font-size: 0.75rem; color: var(--text-dim);">${t.customers.phone}</div>` : ''}`
-            : `<div style="font-weight: 600; color: var(--text-muted); font-style: italic;">Dükkan / Genel</div>`;
+            : `<div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-weight: 700; color: var(--accent-primary);">Genel</span>
+                <span class="badge" style="font-size: 0.68rem; background: rgba(245, 158, 11, 0.15); color: var(--accent-primary); padding: 1px 5px;">Genel Cari</span>
+               </div>`;
 
         tr.innerHTML = `
             <td style="font-size: 0.82rem; white-space: nowrap;">${formatDateTime(t.created_at)}</td>

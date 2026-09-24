@@ -43,6 +43,9 @@ export async function fetchCustomers() {
     if (!supabase) return;
     showLoader();
     try {
+        // Varsayılan 'Genel' carisini garantiye al
+        const genel = await ensureGenelCustomer();
+
         const { data, error } = await supabase
             .from('customers')
             .select('*')
@@ -50,6 +53,12 @@ export async function fetchCustomers() {
 
         if (error) throw error;
         allCustomers = data || [];
+
+        // Eğer Genel listede yoksa başa ekle
+        if (genel && !allCustomers.some(c => c.id === genel.id)) {
+            allCustomers.unshift(genel);
+        }
+
         filterAndRenderCustomers();
     } catch (err) {
         console.error("Cariler yüklenirken hata:", err);
@@ -101,7 +110,8 @@ function renderCustomersTable(customers) {
 
     customers.forEach(c => {
         const tr = document.createElement('tr');
-        const isCustomer = c.type === 'CUSTOMER';
+        const isCustomer = c.type === 'CUSTOMER' || c.type === 'Müşteri';
+        const isGenel = (c.name || '').trim().toLowerCase() === 'genel';
         const typeBadge = isCustomer
             ? '<span class="badge badge-blue"><i class="fa-solid fa-user"></i> Müşteri</span>'
             : '<span class="badge badge-amber"><i class="fa-solid fa-truck"></i> Tedarikçi</span>';
@@ -116,7 +126,10 @@ function renderCustomersTable(customers) {
 
         tr.innerHTML = `
             <td>
-                <div style="font-weight: 700; color: var(--text-main);">${c.name}</div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-weight: 700; color: ${isGenel ? 'var(--accent-primary)' : 'var(--text-main)'};">${c.name}</span>
+                    ${isGenel ? '<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-primary); font-size: 0.7rem; padding: 2px 6px;">Varsayılan</span>' : ''}
+                </div>
                 ${c.address ? `<div style="font-size: 0.76rem; color: var(--text-dim); margin-top: 2px;">${c.address}</div>` : ''}
             </td>
             <td>${typeBadge}</td>
@@ -144,9 +157,10 @@ function renderCustomersTable(customers) {
                     <button class="btn-table-action edit" title="Cariyi Düzenle" data-action="edit" data-id="${c.id}">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
+                    ${!isGenel ? `
                     <button class="btn-table-action delete" title="Cariyi Sil" data-action="delete" data-id="${c.id}">
                         <i class="fa-solid fa-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </div>
             </td>
         `;
@@ -259,6 +273,11 @@ if (customerForm) {
 }
 
 function confirmDeleteCustomer(customer) {
+    if ((customer.name || '').trim().toLowerCase() === 'genel') {
+        showToast("Varsayılan 'Genel' cari hesabı silinemez!", "error");
+        return;
+    }
+
     showConfirmModal({
         title: "Cari Hesap Silinecek",
         body: `"${customer.name}" adlı cariyi silmek istediğinize emin misiniz?`,
@@ -649,5 +668,114 @@ if (ledgerBtnWhatsapp) {
         const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(msg)}`;
         window.open(url, '_blank');
     });
+}
+
+// ========================================================
+// VARSAYILAN 'GENEL' CARİ YÖNETİMİ & SENKRONİZASYON
+// ========================================================
+let cachedGenelCustomer = null;
+
+export async function ensureGenelCustomer() {
+    if (!supabase) return null;
+    if (cachedGenelCustomer) return cachedGenelCustomer;
+
+    try {
+        // 1. Önce 'Genel' isimli cari var mı kontrol et
+        const { data, error } = await supabase
+            .from('customers')
+            .select('*')
+            .ilike('name', 'Genel')
+            .limit(1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            cachedGenelCustomer = data[0];
+            return cachedGenelCustomer;
+        }
+
+        // 2. Yoksa otomatik 'Genel' cari oluştur
+        const { data: { user } } = await supabase.auth.getUser();
+        const payload = {
+            name: 'Genel',
+            type: 'CUSTOMER',
+            phone: '',
+            balance: 0,
+            notes: 'Hızlı Satış Varsayılan Genel Müşteri Cari Hesabı'
+        };
+        if (user) payload.user_id = user.id;
+
+        const { data: newCust, error: createError } = await supabase
+            .from('customers')
+            .insert([payload])
+            .select()
+            .single();
+
+        if (createError) {
+            // Eşzamanlı oluşturma durumunda tekrar ara
+            const { data: retry } = await supabase
+                .from('customers')
+                .select('*')
+                .ilike('name', 'Genel')
+                .limit(1);
+            if (retry && retry.length > 0) {
+                cachedGenelCustomer = retry[0];
+                return cachedGenelCustomer;
+            }
+            throw createError;
+        }
+
+        cachedGenelCustomer = newCust;
+        return cachedGenelCustomer;
+    } catch (err) {
+        console.warn("Genel cari kontrol edilirken/oluşturulurken hata:", err);
+        return null;
+    }
+}
+
+export async function syncSalesToCustomerTransactions() {
+    if (!supabase) return;
+    try {
+        const genel = await ensureGenelCustomer();
+        if (!genel) return;
+
+        // Satışları ve mevcut transaction referanslarını al
+        const [{ data: sales, error: salesErr }, { data: existingTrans, error: transErr }] = await Promise.all([
+            supabase.from('sales').select('id, receipt_no, total_amount, payment_method, customer_id, customer_name, created_at'),
+            supabase.from('customer_transactions').select('reference_id').eq('transaction_type', 'SALE')
+        ]);
+
+        if (salesErr || transErr || !sales || sales.length === 0) return;
+
+        const existingRefIds = new Set((existingTrans || []).map(t => t.reference_id).filter(Boolean));
+        const missingSales = sales.filter(s => !existingRefIds.has(s.id));
+
+        if (missingSales.length > 0) {
+            console.log(`${missingSales.length} adet geçmiş satış cari hareketlere işleniyor...`);
+            const payloads = missingSales.map(s => {
+                const isVeresiye = s.payment_method === 'Veresiye';
+                const total = Number(s.total_amount) || 0;
+                return {
+                    customer_id: s.customer_id || genel.id,
+                    transaction_type: 'SALE',
+                    payment_method: isVeresiye ? 'Açık Hesap' : (s.payment_method || 'Nakit'),
+                    debt: total,
+                    credit: isVeresiye ? 0 : total,
+                    amount: total,
+                    reference_id: s.id,
+                    receipt_no: s.receipt_no,
+                    description: `Hızlı Satış #${s.receipt_no} (${s.payment_method || 'Nakit'})`,
+                    created_at: s.created_at
+                };
+            });
+
+            const { error: insErr } = await supabase.from('customer_transactions').insert(payloads);
+            if (!insErr) {
+                document.dispatchEvent(new CustomEvent('transaction-saved'));
+            }
+        }
+    } catch (e) {
+        console.warn("Geçmiş satışlar cari hareketlere senkronize edilirken hata:", e);
+    }
 }
 

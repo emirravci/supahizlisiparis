@@ -3,6 +3,7 @@
 // ========================================================
 
 import { supabase, showLoader, hideLoader, showToast, formatCurrency, formatNumber } from './supabase.js';
+import { ensureGenelCustomer } from './customers.js';
 
 // DOM Elemanları - Ürün Seçimi
 const posSearchInput = document.getElementById('pos-search-input');
@@ -86,6 +87,9 @@ async function loadPriceLists() {
 async function loadPosCustomers() {
     if (!supabase || !posCustomerDatalist) return;
     try {
+        // Varsayılan 'Genel' carisini garantiye al
+        const genel = await ensureGenelCustomer();
+
         const { data, error } = await supabase
             .from('customers')
             .select('id, name, phone, balance, type')
@@ -94,13 +98,19 @@ async function loadPosCustomers() {
         if (error) throw error;
         availableCustomers = data || [];
 
+        // Genel cari listede yoksa ekle
+        if (genel && !availableCustomers.some(c => c.id === genel.id)) {
+            availableCustomers.unshift(genel);
+        }
+
         posCustomerDatalist.innerHTML = '';
         availableCustomers.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.name;
             const bal = Number(c.balance) || 0;
             const balStr = bal < 0 ? `${formatCurrency(Math.abs(bal))} Borç` : (bal > 0 ? `${formatCurrency(bal)} Alacak` : 'Hesap Denk');
-            opt.label = `${c.phone || 'Tel yok'} | ${balStr}`;
+            const isGenel = (c.name || '').trim().toLowerCase() === 'genel';
+            opt.label = `${c.phone || (isGenel ? 'Varsayılan Genel Cari' : 'Tel yok')} | ${balStr}`;
             posCustomerDatalist.appendChild(opt);
         });
     } catch (e) {
@@ -553,18 +563,34 @@ if (posCheckoutBtn) {
             return;
         }
 
-        // Veresiye Satış Kontrolü
+        // 0. Cari Belirleme (Cari seçilmemişse varsayılan 'Genel' atanır)
+        let targetCustomerId = selectedPosCustomerId;
+        let targetCustomerName = posCustomerName ? posCustomerName.value.trim() : '';
+
+        // İsim elle girilmişse ve kayıtlı carilerle eşleşiyorsa al
+        if (!targetCustomerId && targetCustomerName) {
+            const matched = availableCustomers.find(c => c.name.toLowerCase() === targetCustomerName.toLowerCase());
+            if (matched) {
+                targetCustomerId = matched.id;
+                targetCustomerName = matched.name;
+            }
+        }
+
+        // Cari seçilmemişse veya boşsa varsayılan 'Genel' carisini ata
+        if (!targetCustomerId) {
+            const genel = await ensureGenelCustomer();
+            if (genel) {
+                targetCustomerId = genel.id;
+                targetCustomerName = 'Genel';
+            }
+        }
+
+        // Veresiye Satış Kontrolü (Veresiye Genel'e yapılamaz, kayıtlı gerçek bir cari seçilmelidir)
         if (selectedPaymentMethod === 'Veresiye') {
-            if (!selectedPosCustomerId) {
-                const entered = (posCustomerName ? posCustomerName.value.trim() : '').toLowerCase();
-                const matched = availableCustomers.find(c => c.name.toLowerCase() === entered);
-                if (matched) {
-                    selectedPosCustomerId = matched.id;
-                } else {
-                    showToast("Veresiye satışı yapabilmek için lütfen kayıtlı bir Müşteri / Cari seçin!", "error");
-                    if (posCustomerName) posCustomerName.focus();
-                    return;
-                }
+            if (!targetCustomerId || targetCustomerName.toLowerCase() === 'genel') {
+                showToast("Veresiye satışı yapabilmek için lütfen 'Genel' dışında kayıtlı bir Müşteri / Cari seçin!", "error");
+                if (posCustomerName) posCustomerName.focus();
+                return;
             }
         }
 
@@ -572,7 +598,6 @@ if (posCheckoutBtn) {
         const randomPart = Math.floor(1000 + Math.random() * 9000);
         const receiptNo = `NAL-${datePart}-${randomPart}`;
 
-        const customer = posCustomerName ? posCustomerName.value.trim() : null;
         const totalAmount = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
 
         showLoader();
@@ -582,8 +607,8 @@ if (posCheckoutBtn) {
                 receipt_no: receiptNo,
                 total_amount: totalAmount,
                 payment_method: selectedPaymentMethod,
-                customer_id: selectedPosCustomerId || null,
-                customer_name: customer,
+                customer_id: targetCustomerId || null,
+                customer_name: targetCustomerName || 'Genel',
                 price_list_id: selectedPriceListId !== 'DEFAULT' ? selectedPriceListId : null,
                 note: `Hızlı Tezgah Satışı (${selectedPaymentMethod})${selectedPriceListId !== 'DEFAULT' ? ' - Özel Liste' : ''}`
             }]).select().single();
@@ -610,13 +635,13 @@ if (posCheckoutBtn) {
 
                 movementsPayload.push({
                     product_id: item.product.id,
-                    customer_id: selectedPosCustomerId || null,
+                    customer_id: targetCustomerId || null,
                     movement_type: 'OUT',
                     quantity: item.quantity,
                     unit_price: item.unitPrice,
                     total_price: lineTotal,
                     reference_id: saleId,
-                    note: `Satış #${receiptNo} - ${customer || 'Perakende Müşteri'}`
+                    note: `Satış #${receiptNo} - ${targetCustomerName || 'Genel'}`
                 });
             }
 
@@ -639,35 +664,36 @@ if (posCheckoutBtn) {
                     .eq('id', item.product.id);
             }
 
-            // 4. Cari Hareketleri Kaydı (Müşteri seçiliyse veya Veresiye ise)
-            if (selectedPosCustomerId) {
-                const isVeresiye = selectedPaymentMethod === 'Veresiye';
-                const transPayload = {
-                    customer_id: selectedPosCustomerId,
-                    transaction_type: 'SALE',
-                    payment_method: isVeresiye ? 'Açık Hesap' : selectedPaymentMethod,
-                    debt: totalAmount, // Satış bedeli borç olarak işlenir
-                    credit: isVeresiye ? 0 : totalAmount, // Peşinse alacak da eşitlenir, veresiyeyse borç kalır
-                    amount: totalAmount,
-                    reference_id: saleId,
-                    receipt_no: receiptNo,
-                    description: `Hızlı Satış #${receiptNo} (${selectedPaymentMethod})`
-                };
+            // 4. Cari Hareketleri Kaydı (TÜM Satışlar İstisnasız Cari Hareketlere Yazılır)
+            const isVeresiye = selectedPaymentMethod === 'Veresiye';
+            const transPayload = {
+                customer_id: targetCustomerId,
+                transaction_type: 'SALE',
+                payment_method: isVeresiye ? 'Açık Hesap' : selectedPaymentMethod,
+                debt: totalAmount, // Satış bedeli borç olarak işlenir
+                credit: isVeresiye ? 0 : totalAmount, // Peşin satışta anında tahsil edildiği için alacak da eşitlenir
+                amount: totalAmount, // Sattığı fiyat
+                reference_id: saleId,
+                receipt_no: receiptNo,
+                description: `Hızlı Satış #${receiptNo} - ${cart.length} Kalem (${selectedPaymentMethod})`
+            };
 
-                const { error: transErr } = await supabase.from('customer_transactions').insert([transPayload]);
-                if (transErr) console.warn("Cari hareketi oluşturulamadı:", transErr);
+            const { error: transErr } = await supabase.from('customer_transactions').insert([transPayload]);
+            if (transErr) console.warn("Cari hareketi oluşturulamadı:", transErr);
 
-                // Eğer Veresiye ise müşterinin bakiyesini borçlandır
-                if (isVeresiye) {
-                    const targetCust = availableCustomers.find(c => c.id === selectedPosCustomerId);
-                    const currentBal = Number(targetCust?.balance) || 0;
-                    const newBal = currentBal - totalAmount; // Borç eksiye çeker
-                    await supabase.from('customers').update({ balance: newBal }).eq('id', selectedPosCustomerId);
-                }
-                document.dispatchEvent(new CustomEvent('transaction-saved'));
+            // Eğer Veresiye ise müşterinin bakiyesini borçlandır
+            if (isVeresiye && targetCustomerId) {
+                const targetCust = availableCustomers.find(c => c.id === targetCustomerId);
+                const currentBal = Number(targetCust?.balance) || 0;
+                const newBal = currentBal - totalAmount; // Borç eksiye çeker
+                await supabase.from('customers').update({ balance: newBal }).eq('id', targetCustomerId);
             }
 
-            showToast(`Satış #${receiptNo} başarıyla tamamlandı! Toplam: ${formatCurrency(totalAmount)}`, "success");
+            // Cari hareketler ve stok hareketleri modüllerine sinyal gönder
+            document.dispatchEvent(new CustomEvent('transaction-saved'));
+            document.dispatchEvent(new CustomEvent('movement-saved'));
+
+            showToast(`Satış #${receiptNo} başarıyla tamamlandı! Toplam: ${formatCurrency(totalAmount)} (${targetCustomerName || 'Genel'})`, "success");
 
             clearCart();
             selectedPosCustomerId = null;

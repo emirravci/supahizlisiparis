@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Proje CSS -->
-    <link rel="stylesheet" href="css/style.css?v=3.2">
+    <link rel="stylesheet" href="css/style.css?v=3.3">
 </head>
 <body>
 
@@ -1125,9 +1125,9 @@
 
                         <div class="form-group" style="margin-bottom: 1.25rem;">
                             <label for="pos-customer-name" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
-                                Müşteri / Cari Seçimi <span style="font-size: 0.75rem; color: var(--accent-danger); font-weight: 600;">(Veresiye için Zorunlu)</span>
+                                Müşteri / Cari Seçimi <span style="font-size: 0.75rem; color: var(--accent-primary); font-weight: 600;">(Boş ise: 'Genel' Cari Hesabı)</span>
                             </label>
-                            <input list="pos-customer-datalist" id="pos-customer-name" class="input-control" placeholder="Cari Seçin veya Müşteri Adı Yazın..." autocomplete="off">
+                            <input list="pos-customer-datalist" id="pos-customer-name" class="input-control" placeholder="Cari Seçin (Boş bırakılırsa: 'Genel' Cari)..." autocomplete="off">
                             <datalist id="pos-customer-datalist">
                                 <!-- Dinamik Dolacak -->
                             </datalist>
@@ -1659,11 +1659,11 @@
     <script src="js/dashboard.js" type="module"></script>
     <script src="js/products.js" type="module"></script>
     <script src="js/pricelists.js" type="module"></script>
-    <script src="js/pos.js" type="module"></script>
-    <script src="js/customers.js" type="module"></script>
-    <script src="js/transactions.js" type="module"></script>
+    <script src="js/pos.js?v=3.3" type="module"></script>
+    <script src="js/customers.js?v=3.3" type="module"></script>
+    <script src="js/transactions.js?v=3.3" type="module"></script>
     <script src="js/proposals.js" type="module"></script>
-    <script src="js/catalog.js?v=3.2" type="module"></script>
+    <script src="js/catalog.js?v=3.3" type="module"></script>
     <script src="js/movements.js" type="module"></script>
 
 </body>
