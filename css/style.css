@@ -614,33 +614,37 @@ aside.sidebar {
     display: flex;
     flex-direction: column;
     z-index: 100;
-    transition: var(--transition);
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.28s ease, width 0.28s ease;
 }
 
-/* Sidebar Kapatıldığında Tam Ekran Düzeni (Hem Laptop Hem Mobil İçin) */
-body.sidebar-collapsed aside.sidebar,
-aside.sidebar.is-closed {
-    display: none !important;
-    transform: translateX(-100%) !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
+/* Sidebar Laptop / Masaüstünde Kapatıldığında / Daraltıldığında */
+html.sidebar-init-collapsed aside.sidebar,
+body.sidebar-collapsed aside.sidebar {
+    transform: translateX(-100%);
+    visibility: hidden;
+    pointer-events: none;
 }
 
+html.sidebar-init-collapsed main.main-content,
 body.sidebar-collapsed main.main-content {
-    margin-left: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
 }
 
+html.sidebar-init-collapsed .mobile-header,
 body.sidebar-collapsed .mobile-header {
-    display: flex !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 500 !important;
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 500;
 }
 
+html.sidebar-init-collapsed .mobile-menu-btn,
 body.sidebar-collapsed .mobile-menu-btn {
-    display: flex !important;
+    display: flex;
 }
 
 
@@ -795,21 +799,25 @@ body.sidebar-collapsed .mobile-menu-btn {
     left: 0;
     right: 0;
     height: var(--mobile-nav-height);
-    background: var(--bg-surface);
+    background: rgba(18, 22, 31, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid var(--border-subtle);
     z-index: 1000;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0 0.5rem;
+    padding: 0 0.4rem;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     scrollbar-width: none;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
 }
 .mobile-bottom-nav::-webkit-scrollbar {
     display: none;
 }
 
 .mobile-nav-btn {
-    flex: 0 0 70px;
-    min-width: 70px;
+    flex: 0 0 68px;
+    min-width: 68px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -819,17 +827,46 @@ body.sidebar-collapsed .mobile-menu-btn {
     color: var(--text-muted);
     font-size: 0.68rem;
     font-weight: 600;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     transition: var(--transition);
     white-space: nowrap;
-    padding: 0 4px;
+    padding: 4px 2px;
+    border-radius: var(--radius-sm);
 }
 
 .mobile-nav-btn i {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
+    transition: transform 0.15s ease;
+}
+
+.mobile-nav-btn:active i {
+    transform: scale(0.9);
 }
 
 .mobile-nav-btn.active {
     color: var(--accent-primary);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.mobile-nav-btn.active i {
+    color: var(--accent-primary);
+}
+
+.mobile-nav-btn.mobile-nav-menu-btn {
+    color: var(--text-main);
+    border-left: 1px solid var(--border-subtle);
+    margin-left: 2px;
+    padding-left: 6px;
+}
+
+.mobile-nav-btn.mobile-nav-menu-btn:hover,
+.mobile-nav-btn.mobile-nav-menu-btn:active {
+    color: var(--accent-primary);
+    background: rgba(245, 158, 11, 0.12);
 }
 
 /* Ana İçerik Alanı */
@@ -837,6 +874,7 @@ main.main-content {
     margin-left: var(--sidebar-width);
     padding: 2rem;
     min-height: 100vh;
+    transition: margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* View Sections */
@@ -1884,10 +1922,10 @@ main.main-content {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    z-index: 9998;
+    z-index: 99998;
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -1901,14 +1939,14 @@ main.main-content {
 }
 
 #sidebar-close-btn {
-    display: flex !important;
+    display: flex;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid var(--border-subtle);
     font-size: 1.15rem;
     color: var(--text-main);
     cursor: pointer;
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     margin-left: auto;
     border-radius: var(--radius-sm);
@@ -1920,9 +1958,9 @@ main.main-content {
 }
 
 #sidebar-close-btn:hover, #sidebar-close-btn:active {
-    color: #fff;
-    background: var(--accent-danger);
-    border-color: var(--accent-danger);
+    color: var(--accent-primary);
+    background: rgba(245, 158, 11, 0.15);
+    border-color: var(--accent-primary);
 }
 
 .sidebar-close-nav-item,
@@ -1998,11 +2036,11 @@ main.main-content {
     }
 
     #sidebar-close-btn {
-        display: flex !important;
+        display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer !important;
-        touch-action: manipulation !important;
+        cursor: pointer;
+        touch-action: manipulation;
     }
 
     .sidebar-close-nav-item,
@@ -2032,8 +2070,8 @@ main.main-content {
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer !important;
-        touch-action: manipulation !important;
+        cursor: pointer;
+        touch-action: manipulation;
     }
 
     aside.sidebar {
@@ -2043,21 +2081,21 @@ main.main-content {
         bottom: 0;
         width: 290px;
         max-width: 85vw;
-        z-index: 99999 !important;
-        transform: translateX(-100%) !important;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
-        box-shadow: none !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        display: none !important;
+        z-index: 99999;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
+        box-shadow: none;
+        visibility: hidden;
+        pointer-events: none;
+        display: flex;
     }
 
+    body.sidebar-open aside.sidebar,
     aside.sidebar.mobile-open {
-        display: flex !important;
-        transform: translateX(0) !important;
-        box-shadow: 4px 0 35px rgba(0, 0, 0, 0.8) !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
+        transform: translateX(0);
+        box-shadow: 4px 0 35px rgba(0, 0, 0, 0.85);
+        visibility: visible;
+        pointer-events: auto;
     }
 
     main.main-content {
