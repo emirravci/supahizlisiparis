@@ -737,6 +737,7 @@ function confirmConvertToSale(proposal) {
                         const newBal = (Number(custData.balance) || 0) - Number(proposal.total_amount);
                         await supabase.from('customers').update({ balance: newBal }).eq('id', proposal.customer_id);
                     }
+                    document.dispatchEvent(new CustomEvent('transaction-saved'));
                 }
 
                 // 4. Teklif Durumunu Güncelle (APPROVED)

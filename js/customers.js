@@ -439,6 +439,7 @@ if (transactionForm) {
             showToast("Hareket başarıyla kaydedildi!", "success");
             closeTransactionModal();
             await fetchCustomers();
+            document.dispatchEvent(new CustomEvent('transaction-saved'));
 
             // Eğer şu an aktif açık olan ekstre modalı varsa onu da güncelle
             if (activeLedgerCustomer && activeLedgerCustomer.id === custId) {

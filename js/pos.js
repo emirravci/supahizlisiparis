@@ -664,6 +664,7 @@ if (posCheckoutBtn) {
                     const newBal = currentBal - totalAmount; // Borç eksiye çeker
                     await supabase.from('customers').update({ balance: newBal }).eq('id', selectedPosCustomerId);
                 }
+                document.dispatchEvent(new CustomEvent('transaction-saved'));
             }
 
             showToast(`Satış #${receiptNo} başarıyla tamamlandı! Toplam: ${formatCurrency(totalAmount)}`, "success");

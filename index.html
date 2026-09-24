@@ -793,11 +793,17 @@
          ======================================================== -->
     <div id="app-container">
 
-        <!-- Masaüstü Sabit Sidebar -->
-        <aside class="sidebar">
+        <!-- Mobil Çekmece Arka Plan Karartması (Backdrop) -->
+        <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+        <!-- Masaüstü & Mobil Yan Menü (Sidebar) -->
+        <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo-icon"><i class="fa-solid fa-hammer"></i></div>
                 <div class="sidebar-logo-title">Nalbur<span>Stok</span></div>
+                <button class="btn-icon" id="sidebar-close-btn" title="Menüyü Kapat" aria-label="Kapat">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
             <ul class="sidebar-nav">
@@ -807,8 +813,14 @@
                 <li class="nav-item" id="nav-pos">
                     <button><i class="fa-solid fa-cash-register"></i><span>Hızlı Satış</span></button>
                 </li>
+                <li class="nav-item" id="nav-customer-transactions">
+                    <button><i class="fa-solid fa-money-bill-transfer"></i><span>Cari Hareketler</span></button>
+                </li>
+                <li class="nav-item" id="nav-customers">
+                    <button><i class="fa-solid fa-address-book"></i><span>Cari Hesaplar</span></button>
+                </li>
                 <li class="nav-item" id="nav-proposals">
-                    <button><i class="fa-solid fa-file-invoice-dollar"></i><span>Sipariş & Teklif (Proforma)</span></button>
+                    <button><i class="fa-solid fa-file-invoice-dollar"></i><span>Sipariş & Teklif</span></button>
                 </li>
                 <li class="nav-item" id="nav-products">
                     <button><i class="fa-solid fa-boxes-stacked"></i><span>Ürünler & Stok</span></button>
@@ -816,11 +828,8 @@
                 <li class="nav-item" id="nav-pricelists">
                     <button><i class="fa-solid fa-tags"></i><span>Fiyat Listeleri</span></button>
                 </li>
-                <li class="nav-item" id="nav-customers">
-                    <button><i class="fa-solid fa-address-book"></i><span>Cari Hesaplar</span></button>
-                </li>
                 <li class="nav-item" id="nav-catalog">
-                    <button><i class="fa-solid fa-book-open"></i><span>Dijital Katalog (Afiş)</span></button>
+                    <button><i class="fa-solid fa-book-open"></i><span>Dijital Afiş (Katalog)</span></button>
                 </li>
                 <li class="nav-item" id="nav-movements">
                     <button><i class="fa-solid fa-clock-rotate-left"></i><span>Stok Hareketleri</span></button>
@@ -840,16 +849,21 @@
 
         <!-- Mobil Üst Bar -->
         <header class="mobile-header">
-            <div class="mobile-brand">
-                <i class="fa-solid fa-hammer" style="color: var(--accent-primary);"></i>
-                <span>NalburStok</span>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Menüyü Aç" title="Menü">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="mobile-brand">
+                    <i class="fa-solid fa-hammer" style="color: var(--accent-primary);"></i>
+                    <span>NalburStok</span>
+                </div>
             </div>
             <button class="btn-icon-logout" id="btn-logout-mobile" title="Çıkış Yap">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </button>
         </header>
 
-        <!-- Mobil Alt Menü Barı (Scrollable 7 Buton) -->
+        <!-- Mobil Alt Menü Barı (Yatay Kaydırılabilir) -->
         <nav class="mobile-bottom-nav">
             <button class="mobile-nav-btn active" id="m-nav-dashboard">
                 <i class="fa-solid fa-chart-pie"></i>
@@ -859,25 +873,29 @@
                 <i class="fa-solid fa-cash-register"></i>
                 <span>Hızlı Satış</span>
             </button>
-            <button class="mobile-nav-btn" id="m-nav-proposals">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
-                <span>Teklif</span>
-            </button>
-            <button class="mobile-nav-btn" id="m-nav-products">
-                <i class="fa-solid fa-boxes-stacked"></i>
-                <span>Stok</span>
-            </button>
-            <button class="mobile-nav-btn" id="m-nav-pricelists">
-                <i class="fa-solid fa-tags"></i>
-                <span>Fiyatlar</span>
+            <button class="mobile-nav-btn" id="m-nav-customer-transactions">
+                <i class="fa-solid fa-money-bill-transfer"></i>
+                <span>Cari Hrk.</span>
             </button>
             <button class="mobile-nav-btn" id="m-nav-customers">
                 <i class="fa-solid fa-address-book"></i>
                 <span>Cari</span>
             </button>
+            <button class="mobile-nav-btn" id="m-nav-products">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Stok</span>
+            </button>
+            <button class="mobile-nav-btn" id="m-nav-proposals">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <span>Teklif</span>
+            </button>
             <button class="mobile-nav-btn" id="m-nav-catalog">
                 <i class="fa-solid fa-book-open"></i>
                 <span>Katalog</span>
+            </button>
+            <button class="mobile-nav-btn" id="m-nav-movements">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Depo Hrk.</span>
             </button>
         </nav>
 
@@ -1477,6 +1495,120 @@
                 </div>
             </section>
 
+            <!-- ==============================================
+                 I. CARİ & KASA HAREKETLERİ (TRANSACTIONS VIEW)
+                 ============================================== -->
+            <section id="customer-transactions-view" class="view-section">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2><i class="fa-solid fa-money-bill-transfer" style="color: var(--accent-primary);"></i> Cari & Kasa Hareketleri</h2>
+                        <p>Müşteri tahsilatları, tedarikçi ödemeleri, açık hesap veresiye satışlar ve dükkan giderleri</p>
+                    </div>
+                    <div class="view-header-actions">
+                        <button class="btn btn-success" id="ctx-btn-new-collection">
+                            <i class="fa-solid fa-hand-holding-dollar"></i> Tahsilat Al
+                        </button>
+                        <button class="btn btn-primary" id="ctx-btn-new-payment">
+                            <i class="fa-solid fa-money-bill-wave"></i> Ödeme Yap
+                        </button>
+                        <button class="btn btn-secondary" id="ctx-btn-new-expense">
+                            <i class="fa-solid fa-receipt"></i> Gider Ekle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5 Ciro & Kasa İstatistik Kartı -->
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-bottom: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon-box green"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div class="stat-content">
+                            <span class="stat-label">Bugünkü Satış Cirosu</span>
+                            <span class="stat-number" id="ctx-stat-today-revenue">0,00 ₺</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-box blue"><i class="fa-solid fa-calendar-days"></i></div>
+                        <div class="stat-content">
+                            <span class="stat-label">Bu Ayki Satış Cirosu</span>
+                            <span class="stat-number" id="ctx-stat-month-revenue">0,00 ₺</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-box amber"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                        <div class="stat-content">
+                            <span class="stat-label">Bu Ayki Tahsilat</span>
+                            <span class="stat-number" id="ctx-stat-month-collection">0,00 ₺</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-box red"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <div class="stat-content">
+                            <span class="stat-label">Toplam Veresiye Alacak</span>
+                            <span class="stat-number" id="ctx-stat-total-debt">0,00 ₺</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-box" style="background: rgba(168, 85, 247, 0.12); color: #a855f7;"><i class="fa-solid fa-receipt"></i></div>
+                        <div class="stat-content">
+                            <span class="stat-label">Bu Ayki Dükkan Gideri</span>
+                            <span class="stat-number" id="ctx-stat-month-expense">0,00 ₺</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtre Barı -->
+                <div class="products-filter-bar">
+                    <div class="input-wrapper filter-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="ctx-search-input" class="input-control" placeholder="Cari adı, fiş no veya açıklama ara...">
+                    </div>
+                    <select id="ctx-type-filter" class="input-control filter-select">
+                        <option value="all">Tüm Hareket Türleri</option>
+                        <option value="SALE">Satışlar (Peşin / Veresiye)</option>
+                        <option value="COLLECTION">Tahsilatlar (Para Girişi)</option>
+                        <option value="PAYMENT">Ödemeler (Tedarikçi Çıkışı)</option>
+                        <option value="EXPENSE">Dükkan Giderleri / Masraflar</option>
+                    </select>
+                    <select id="ctx-method-filter" class="input-control filter-select">
+                        <option value="all">Tüm Ödeme Şekilleri</option>
+                        <option value="Nakit">Nakit</option>
+                        <option value="Kredi Kartı">Kredi Kartı</option>
+                        <option value="Havale/EFT">Banka / Havale</option>
+                        <option value="Açık Hesap">Açık Hesap (Veresiye)</option>
+                    </select>
+                    <select id="ctx-date-filter" class="input-control filter-select">
+                        <option value="all">Tüm Zamanlar</option>
+                        <option value="today">Bugün</option>
+                        <option value="this_week">Bu Hafta</option>
+                        <option value="this_month">Bu Ay</option>
+                    </select>
+                </div>
+
+                <!-- Hareketler Tablosu -->
+                <div class="card-panel">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih / Saat</th>
+                                    <th>Cari / İlgili Kişi</th>
+                                    <th>İşlem Türü</th>
+                                    <th>Ödeme Türü</th>
+                                    <th>Belge / Fiş No</th>
+                                    <th>Açıklama</th>
+                                    <th style="text-align: right;">Borç (Çıkış)</th>
+                                    <th style="text-align: right;">Alacak (Giriş)</th>
+                                    <th style="text-align: right;">Net Tutar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ctx-table-tbody">
+                                <!-- Dinamik Dolacak -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -1490,6 +1622,7 @@
     <script src="js/pricelists.js" type="module"></script>
     <script src="js/pos.js" type="module"></script>
     <script src="js/customers.js" type="module"></script>
+    <script src="js/transactions.js" type="module"></script>
     <script src="js/proposals.js" type="module"></script>
     <script src="js/catalog.js" type="module"></script>
     <script src="js/movements.js" type="module"></script>

@@ -42,15 +42,51 @@ const navItems = {
         desktop: document.getElementById('nav-customers'),
         mobile: document.getElementById('m-nav-customers')
     },
+    'customer-transactions': {
+        desktop: document.getElementById('nav-customer-transactions'),
+        mobile: document.getElementById('m-nav-customer-transactions')
+    },
     'catalog': {
         desktop: document.getElementById('nav-catalog'),
         mobile: document.getElementById('m-nav-catalog')
     },
     'movements': {
         desktop: document.getElementById('nav-movements'),
-        mobile: null
+        mobile: document.getElementById('m-nav-movements')
     }
 };
+
+// ========================================================
+// MOBİL ÇEKMECE MENÜ (SIDEBAR DRAWER) YÖNETİMİ
+// ========================================================
+const appSidebar = document.getElementById('app-sidebar');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+
+export function openMobileSidebar() {
+    if (appSidebar) appSidebar.classList.add('mobile-open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+export function closeMobileSidebar() {
+    if (appSidebar) appSidebar.classList.remove('mobile-open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+export function toggleMobileSidebar() {
+    if (appSidebar && appSidebar.classList.contains('mobile-open')) {
+        closeMobileSidebar();
+    } else {
+        openMobileSidebar();
+    }
+}
+
+if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleMobileSidebar);
+if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeMobileSidebar);
+if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeMobileSidebar);
 
 // ========================================================
 // GLOBAL LOADER (SPINNER)
@@ -164,6 +200,9 @@ export function showView(viewId, extraData = null) {
             history.replaceState(null, '', `#${viewId}`);
         }
     } catch (e) {}
+
+    // Mobil çekmece açıksa otomatik kapat
+    closeMobileSidebar();
 
     // Sayfa yukarı kaydırılsın
     window.scrollTo({ top: 0, behavior: 'smooth' });
