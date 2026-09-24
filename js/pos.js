@@ -41,10 +41,15 @@ let selectedPaymentMethod = 'Nakit';
 let availablePriceLists = [];
 let selectedPriceListId = 'DEFAULT';
 let currentPriceMap = {}; // { [productId]: customPrice }
+let availableCustomers = [];
+let selectedPosCustomerId = null;
+
+const posCustomerDatalist = document.getElementById('pos-customer-datalist');
+const posSelectedCustomerInfo = document.getElementById('pos-selected-customer-info');
 
 // Sayfa Yüklendiğinde Dinle
 document.addEventListener('view-pos-loaded', async () => {
-    await Promise.all([fetchPosProducts(), loadPriceLists()]);
+    await Promise.all([fetchPosProducts(), loadPriceLists(), loadPosCustomers()]);
 });
 
 // ========================================================
@@ -73,6 +78,58 @@ async function loadPriceLists() {
     } catch (err) {
         console.error("Fiyat listeleri yüklenemedi:", err);
     }
+}
+
+// ========================================================
+// CARİ / MÜŞTERİ LİSTESİ YÜKLEME (POS İÇİN)
+// ========================================================
+async function loadPosCustomers() {
+    if (!supabase || !posCustomerDatalist) return;
+    try {
+        const { data, error } = await supabase
+            .from('customers')
+            .select('id, name, phone, balance, type')
+            .order('name', { ascending: true });
+
+        if (error) throw error;
+        availableCustomers = data || [];
+
+        posCustomerDatalist.innerHTML = '';
+        availableCustomers.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.name;
+            const bal = Number(c.balance) || 0;
+            const balStr = bal < 0 ? `${formatCurrency(Math.abs(bal))} Borç` : (bal > 0 ? `${formatCurrency(bal)} Alacak` : 'Hesap Denk');
+            opt.label = `${c.phone || 'Tel yok'} | ${balStr}`;
+            posCustomerDatalist.appendChild(opt);
+        });
+    } catch (e) {
+        console.warn("POS müşterileri yüklenemedi:", e);
+    }
+}
+
+if (posCustomerName) {
+    posCustomerName.addEventListener('input', () => {
+        const val = posCustomerName.value.trim().toLowerCase();
+        const matched = availableCustomers.find(c => c.name.toLowerCase() === val);
+        if (matched) {
+            selectedPosCustomerId = matched.id;
+            if (posSelectedCustomerInfo) {
+                const bal = Number(matched.balance) || 0;
+                let balBadge = '<span style="color: var(--text-dim);">0,00 ₺</span>';
+                if (bal < 0) balBadge = `<span style="color: var(--accent-danger); font-weight: 700;">${formatCurrency(bal)} (Borçlu)</span>`;
+                else if (bal > 0) balBadge = `<span style="color: var(--accent-success); font-weight: 700;">+${formatCurrency(bal)} (Alacaklı)</span>`;
+                
+                posSelectedCustomerInfo.innerHTML = `<i class="fa-solid fa-user-check" style="color: var(--accent-success);"></i> <b>${matched.name}</b> ${matched.phone ? '(' + matched.phone + ')' : ''} — Bakiye: ${balBadge}`;
+                posSelectedCustomerInfo.style.display = 'block';
+            }
+        } else {
+            selectedPosCustomerId = null;
+            if (posSelectedCustomerInfo) {
+                posSelectedCustomerInfo.style.display = 'none';
+            }
+        }
+    });
 }
 
 // Fiyat Listesi Değiştiğinde
@@ -496,6 +553,21 @@ if (posCheckoutBtn) {
             return;
         }
 
+        // Veresiye Satış Kontrolü
+        if (selectedPaymentMethod === 'Veresiye') {
+            if (!selectedPosCustomerId) {
+                const entered = (posCustomerName ? posCustomerName.value.trim() : '').toLowerCase();
+                const matched = availableCustomers.find(c => c.name.toLowerCase() === entered);
+                if (matched) {
+                    selectedPosCustomerId = matched.id;
+                } else {
+                    showToast("Veresiye satışı yapabilmek için lütfen kayıtlı bir Müşteri / Cari seçin!", "error");
+                    if (posCustomerName) posCustomerName.focus();
+                    return;
+                }
+            }
+        }
+
         const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         const randomPart = Math.floor(1000 + Math.random() * 9000);
         const receiptNo = `NAL-${datePart}-${randomPart}`;
@@ -510,6 +582,7 @@ if (posCheckoutBtn) {
                 receipt_no: receiptNo,
                 total_amount: totalAmount,
                 payment_method: selectedPaymentMethod,
+                customer_id: selectedPosCustomerId || null,
                 customer_name: customer,
                 price_list_id: selectedPriceListId !== 'DEFAULT' ? selectedPriceListId : null,
                 note: `Hızlı Tezgah Satışı (${selectedPaymentMethod})${selectedPriceListId !== 'DEFAULT' ? ' - Özel Liste' : ''}`
@@ -537,6 +610,7 @@ if (posCheckoutBtn) {
 
                 movementsPayload.push({
                     product_id: item.product.id,
+                    customer_id: selectedPosCustomerId || null,
                     movement_type: 'OUT',
                     quantity: item.quantity,
                     unit_price: item.unitPrice,
@@ -565,12 +639,41 @@ if (posCheckoutBtn) {
                     .eq('id', item.product.id);
             }
 
+            // 4. Cari Hareketleri Kaydı (Müşteri seçiliyse veya Veresiye ise)
+            if (selectedPosCustomerId) {
+                const isVeresiye = selectedPaymentMethod === 'Veresiye';
+                const transPayload = {
+                    customer_id: selectedPosCustomerId,
+                    transaction_type: 'SALE',
+                    payment_method: isVeresiye ? 'Açık Hesap' : selectedPaymentMethod,
+                    debt: totalAmount, // Satış bedeli borç olarak işlenir
+                    credit: isVeresiye ? 0 : totalAmount, // Peşinse alacak da eşitlenir, veresiyeyse borç kalır
+                    amount: totalAmount,
+                    reference_id: saleId,
+                    receipt_no: receiptNo,
+                    description: `Hızlı Satış #${receiptNo} (${selectedPaymentMethod})`
+                };
+
+                const { error: transErr } = await supabase.from('customer_transactions').insert([transPayload]);
+                if (transErr) console.warn("Cari hareketi oluşturulamadı:", transErr);
+
+                // Eğer Veresiye ise müşterinin bakiyesini borçlandır
+                if (isVeresiye) {
+                    const targetCust = availableCustomers.find(c => c.id === selectedPosCustomerId);
+                    const currentBal = Number(targetCust?.balance) || 0;
+                    const newBal = currentBal - totalAmount; // Borç eksiye çeker
+                    await supabase.from('customers').update({ balance: newBal }).eq('id', selectedPosCustomerId);
+                }
+            }
+
             showToast(`Satış #${receiptNo} başarıyla tamamlandı! Toplam: ${formatCurrency(totalAmount)}`, "success");
 
             clearCart();
+            selectedPosCustomerId = null;
             if (posCustomerName) posCustomerName.value = '';
+            if (posSelectedCustomerInfo) posSelectedCustomerInfo.style.display = 'none';
 
-            await fetchPosProducts();
+            await Promise.all([fetchPosProducts(), loadPosCustomers()]);
 
         } catch (err) {
             console.error("Satış işlemi sırasında hata:", err);

@@ -157,6 +157,14 @@ export function showView(viewId, extraData = null) {
         }
     });
 
+    // Aktif görünümü kaydet (F5 ve sayfa yenilemede aynı ekranda kalınsın)
+    try {
+        localStorage.setItem('active_nalbur_view', viewId);
+        if (window.location.hash !== `#${viewId}`) {
+            history.replaceState(null, '', `#${viewId}`);
+        }
+    } catch (e) {}
+
     // Sayfa yukarı kaydırılsın
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -276,38 +284,76 @@ async function handleLogout() {
 if (btnLogoutSidebar) btnLogoutSidebar.addEventListener('click', handleLogout);
 if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', handleLogout);
 
+// ========================================================
+// OTURUM DURUMU & SAYFA YÖNETİMİ (F5 UYUMLU BAŞLATMA)
+// ========================================================
+let appInitialized = false;
+
+function applySessionState(session) {
+    if (session && session.user) {
+        // Kullanıcı oturumu açık
+        if (authView) authView.style.display = 'none';
+        if (appContainer) appContainer.style.display = 'block';
+        if (currentUserEmail) currentUserEmail.innerText = session.user.email;
+        if (authForm) authForm.reset();
+
+        // Oturum hazır olduğunu bildiren event'i yayınla
+        document.dispatchEvent(new CustomEvent('app-session-ready', { detail: { session } }));
+
+        // Hangi sayfayı açacağımızı belirle (URL hash'i veya son aktif sayfa)
+        const hashView = window.location.hash ? window.location.hash.replace('#', '') : null;
+        const savedView = localStorage.getItem('active_nalbur_view');
+        
+        let targetView = 'dashboard';
+        if (hashView && document.getElementById(`${hashView}-view`)) {
+            targetView = hashView;
+        } else if (savedView && document.getElementById(`${savedView}-view`)) {
+            targetView = savedView;
+        }
+
+        // Tüm modüllerin (dashboard.js, products.js vs.) yüklenip listener eklemesi için kısa bir gecikme ver
+        setTimeout(() => {
+            showView(targetView);
+        }, 80);
+    } else {
+        // Kullanıcı oturumu kapalı
+        if (appContainer) appContainer.style.display = 'none';
+        if (authView) authView.style.display = 'flex';
+        if (currentUserEmail) currentUserEmail.innerText = '';
+    }
+}
+
 // Supabase Auth Değişikliklerini Dinle & İlk Oturum Kontrolü
 if (supabase) {
     supabase.auth.onAuthStateChange((event, session) => {
-        if (session && session.user) {
-            // Kullanıcı oturum açtı
-            if (authView) authView.style.display = 'none';
-            if (appContainer) appContainer.style.display = 'block';
-            if (currentUserEmail) currentUserEmail.innerText = session.user.email;
-            if (authForm) authForm.reset();
+        if (event === 'SIGNED_OUT') {
+            appInitialized = false;
+            applySessionState(null);
+            return;
+        }
 
-            // Varsayılan olarak Dashboard'u aç
-            showView('dashboard');
-        } else {
-            // Kullanıcı oturumu kapalı
-            if (appContainer) appContainer.style.display = 'none';
-            if (authView) authView.style.display = 'flex';
-            if (currentUserEmail) currentUserEmail.innerText = '';
+        if (session && session.user) {
+            if (!appInitialized) {
+                appInitialized = true;
+                applySessionState(session);
+            } else if (event === 'SIGNED_IN') {
+                applySessionState(session);
+            }
+        } else if (!session) {
+            applySessionState(null);
         }
     });
 
-    // Sayfa açılışında anlık oturum kontrolü
+    // Sayfa açılışında anlık oturum kontrolü (onAuthStateChange tetiklenmezse yedek güvence)
     supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session && session.user) {
-            if (authView) authView.style.display = 'none';
-            if (appContainer) appContainer.style.display = 'block';
-            if (currentUserEmail) currentUserEmail.innerText = session.user.email;
-            showView('dashboard');
-        } else {
-            if (appContainer) appContainer.style.display = 'none';
-            if (authView) authView.style.display = 'flex';
+        if (session && session.user && !appInitialized) {
+            appInitialized = true;
+            applySessionState(session);
+        } else if (!session && !appInitialized) {
+            applySessionState(null);
         }
     }).catch(err => {
         console.warn("İlk oturum kontrolü:", err);
     });
 }
+

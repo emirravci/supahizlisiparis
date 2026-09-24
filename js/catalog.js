@@ -159,6 +159,18 @@ if (catalogAddProductBtn) {
     });
 }
 
+function getCategoryIcon(cat) {
+    if (!cat) return 'fa-box-archive';
+    if (cat.includes('Elektrot') || cat.includes('Kaynak')) return 'fa-bolt';
+    if (cat.includes('İş Güvenliği') || cat.includes('Eldiven')) return 'fa-shield-halved';
+    if (cat.includes('Vida') || cat.includes('Bağlantı')) return 'fa-screwdriver';
+    if (cat.includes('Kesici') || cat.includes('Aşındırıcı')) return 'fa-circle-notch';
+    if (cat.includes('El Aletleri')) return 'fa-wrench';
+    if (cat.includes('Boya') || cat.includes('Kimyasal')) return 'fa-paint-roller';
+    if (cat.includes('Tesisat') || cat.includes('Elektrik')) return 'fa-faucet';
+    return 'fa-box-archive';
+}
+
 // ========================================================
 // AFİŞ KARTLARININ ÇİZİMİ
 // ========================================================
@@ -180,9 +192,16 @@ function renderFlyerGrid() {
         const p = item.product;
         const card = document.createElement('div');
         card.className = 'catalog-card';
+        const hasImage = Boolean(p.image_url);
 
         card.innerHTML = `
             ${item.promoTag ? `<div class="catalog-card-promo">${item.promoTag}</div>` : ''}
+            <div class="catalog-card-img-wrap ${hasImage ? '' : 'placeholder'}">
+                ${hasImage 
+                    ? `<img src="${p.image_url}" alt="${p.name}" class="catalog-card-img" loading="lazy" onerror="this.parentElement.classList.add('placeholder'); this.outerHTML='<i class=\\\'fa-solid ${getCategoryIcon(p.category)}\\\'></i>';">`
+                    : `<i class="fa-solid ${getCategoryIcon(p.category)}"></i>`
+                }
+            </div>
             <div>
                 <div class="catalog-card-cat">${p.category}</div>
                 <div class="catalog-card-name">${p.name}</div>

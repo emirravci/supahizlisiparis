@@ -124,6 +124,26 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="product-image-file">Ürün Görseli <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-dim);">(İsteğe bağlı - Sadece afiş/katalogda kullanılır, maks. 5 MB)</span></label>
+                        <input type="hidden" id="product-image-url">
+                        <div class="image-upload-wrapper" style="display: flex; gap: 1rem; align-items: center; background: var(--bg-input); padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px dashed var(--border-strong);">
+                            <div id="product-image-preview-box" style="width: 60px; height: 60px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; flex-shrink: 0;">
+                                <i class="fa-solid fa-image" id="product-image-placeholder-icon" style="font-size: 1.5rem; color: var(--text-dim);"></i>
+                                <img id="product-image-preview" src="" alt="Önizleme" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            </div>
+                            <div style="flex: 1;">
+                                <input type="file" id="product-image-file" class="input-control" accept="image/jpeg,image/png,image/webp,image/jpg" style="font-size: 0.85rem; padding: 6px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                                    <span style="font-size: 0.75rem; color: var(--text-dim);">JPG, PNG, WEBP (En fazla 5 MB)</span>
+                                    <button type="button" class="btn btn-sm btn-secondary" id="product-image-remove-btn" style="display: none; padding: 2px 8px; font-size: 0.75rem;">
+                                        <i class="fa-solid fa-xmark"></i> Görseli Kaldır
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
                         <label for="product-notes">Açıklama / Tedarikçi Notu</label>
                         <textarea id="product-notes" class="input-control" rows="2" placeholder="Özel notlar veya tedarikçi bilgisi..."></textarea>
                     </div>
@@ -591,6 +611,150 @@
         </div>
     </div>
 
+    <!-- 11. TAHSİLAT / ÖDEME / DÜKKAN GİDERİ MODALI -->
+    <div class="modal-overlay" id="transaction-modal">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="transaction-modal-title"><i class="fa-solid fa-money-bill-transfer" style="color: var(--accent-success);"></i> Para Giriş / Çıkış Hareketi</h3>
+                <button type="button" class="modal-close-btn" id="transaction-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="transaction-form">
+                <div class="modal-body">
+                    <!-- İşlem Türü Seçimi -->
+                    <div class="form-group">
+                        <label for="trans-type">İşlem Türü *</label>
+                        <select id="trans-type" class="input-control" required style="font-weight: 700;">
+                            <option value="COLLECTION">🟢 Tahsilat Al (Müşteriden Para Girişi)</option>
+                            <option value="PAYMENT">🔴 Ödeme Yap (Tedarikçiye Para Çıkışı)</option>
+                            <option value="EXPENSE">🟠 Dükkan Harcaması / Genel Masraf</option>
+                        </select>
+                    </div>
+
+                    <!-- Cari Seçimi (Müşteri / Tedarikçi) -->
+                    <div class="form-group" id="trans-customer-group">
+                        <label for="trans-customer-id">İlgili Cari (Müşteri / Tedarikçi) *</label>
+                        <select id="trans-customer-id" class="input-control">
+                            <option value="">-- Cari Seçin --</option>
+                        </select>
+                    </div>
+
+                    <!-- Masraf Kategorisi (EXPENSE seçildiğinde) -->
+                    <div class="form-group" id="trans-expense-cat-group" style="display: none;">
+                        <label for="trans-expense-cat">Masraf / Gider Türü</label>
+                        <select id="trans-expense-cat" class="input-control">
+                            <option value="Dükkan Kirası">🏢 Dükkan Kirası</option>
+                            <option value="Elektrik / Su / Doğalgaz">⚡ Elektrik / Su / Fatura</option>
+                            <option value="Yemek / Çay / Mutfak">🍲 Yemek & İkram</option>
+                            <option value="Akaryakıt / Nakliye / Kargo">🚚 Akaryakıt & Nakliye / Kargo</option>
+                            <option value="Dükkan Bakım / Sarf">🛠️ Sarf Malzeme & Bakım</option>
+                            <option value="Maaş / Avans">💼 Personel / Maaş / Avans</option>
+                            <option value="Vergi / Muhasebe">📑 Vergi & Resmi Giderler</option>
+                            <option value="Diğer Masraf">📝 Diğer Masraf</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <!-- Tutar -->
+                        <div class="form-group">
+                            <label for="trans-amount">İşlem Tutarı (₺) *</label>
+                            <input type="number" id="trans-amount" class="input-control mono-text" step="0.01" min="0.01" required placeholder="0,00" style="font-size: 1.25rem; font-weight: 800; color: var(--accent-primary);">
+                        </div>
+                        <!-- Kasa / Ödeme Şekli -->
+                        <div class="form-group">
+                            <label for="trans-payment-method">Kasa / Hesap *</label>
+                            <select id="trans-payment-method" class="input-control">
+                                <option value="Nakit">💵 Nakit Kasa</option>
+                                <option value="Havale/EFT">🏦 Banka / Havale / EFT</option>
+                                <option value="Kredi Kartı">💳 Kredi / Banka Kartı</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <!-- Belge / Fiş / Dekont No -->
+                        <div class="form-group">
+                            <label for="trans-receipt-no">Makbuz / Dekont No</label>
+                            <input type="text" id="trans-receipt-no" class="input-control" placeholder="Örn: MAK-102">
+                        </div>
+                        <!-- Tarih -->
+                        <div class="form-group">
+                            <label for="trans-date">İşlem Tarihi *</label>
+                            <input type="date" id="trans-date" class="input-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="trans-description">Açıklama / Not</label>
+                        <input type="text" id="trans-description" class="input-control" placeholder="Örn: Kısmi borç ödemesi veya dükkan faturası...">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="trans-cancel-btn">İptal</button>
+                    <button type="submit" class="btn btn-success" id="trans-submit-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> Hareketi Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 12. CARİ EKSTRESİ & HAREKET GEÇMİŞİ MODALI -->
+    <div class="modal-overlay" id="customer-ledger-modal">
+        <div class="modal-card" style="max-width: 900px; width: 95%;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="ledger-customer-name" style="margin-bottom: 0.2rem;"><i class="fa-solid fa-file-invoice" style="color: var(--accent-primary);"></i> Cari Hesap Ekstresi</h3>
+                    <div id="ledger-customer-info" style="font-size: 0.8rem; color: var(--text-dim);">-</div>
+                </div>
+                <button type="button" class="modal-close-btn" id="ledger-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <!-- Bakiye Özeti ve Hızlı Aksiyon Kartı -->
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 1.25rem;">
+                    <div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">GÜNCEL BAKİYE DURUMU</div>
+                        <div id="ledger-balance-display" class="mono-text" style="font-size: 1.6rem; font-weight: 800;">0,00 ₺</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-sm btn-success" id="ledger-btn-add-collection">
+                            <i class="fa-solid fa-hand-holding-dollar"></i> Tahsilat Al
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger" id="ledger-btn-add-payment">
+                            <i class="fa-solid fa-money-bill-wave"></i> Ödeme / Borç Ekle
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" id="ledger-btn-whatsapp" style="background: #25D366; color: #fff; border: none;">
+                            <i class="fa-brands fa-whatsapp"></i> WhatsApp'la Paylaş
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hareketler Tablosu -->
+                <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                    <table class="data-table" id="ledger-table">
+                        <thead>
+                            <tr>
+                                <th>Tarih / Saat</th>
+                                <th>İşlem Türü</th>
+                                <th>Ödeme Türü</th>
+                                <th>Belge / Fiş No</th>
+                                <th>Açıklama</th>
+                                <th style="text-align: right;">Borç</th>
+                                <th style="text-align: right;">Alacak</th>
+                                <th style="text-align: right;">Kalan Bakiye</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledger-tbody">
+                            <!-- Dinamik Dolacak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="ledger-close-btn">Kapat</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========================================================
          9. GİRİŞ EKRANI (AUTH VIEW)
          ======================================================== -->
@@ -916,7 +1080,14 @@
                         </div>
 
                         <div class="form-group" style="margin-bottom: 1.25rem;">
-                            <input type="text" id="pos-customer-name" class="input-control" placeholder="Müşteri / Cari Adı (Opsiyonel)">
+                            <label for="pos-customer-name" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
+                                Müşteri / Cari Seçimi <span style="font-size: 0.75rem; color: var(--accent-danger); font-weight: 600;">(Veresiye için Zorunlu)</span>
+                            </label>
+                            <input list="pos-customer-datalist" id="pos-customer-name" class="input-control" placeholder="Cari Seçin veya Müşteri Adı Yazın..." autocomplete="off">
+                            <datalist id="pos-customer-datalist">
+                                <!-- Dinamik Dolacak -->
+                            </datalist>
+                            <div id="pos-selected-customer-info" style="display: none; margin-top: 6px; font-size: 0.8rem; padding: 4px 8px; border-radius: var(--radius-sm); background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); color: var(--text-main);"></div>
                         </div>
 
                         <button class="btn btn-success btn-block btn-lg" id="pos-checkout-btn">
@@ -1057,6 +1228,12 @@
                         <p>Müşteri ve toptancı tedarikçi kartları, iletişim bilgileri ve borç/alacak takibi</p>
                     </div>
                     <div class="view-header-actions">
+                        <button class="btn btn-success" id="btn-open-new-transaction">
+                            <i class="fa-solid fa-money-bill-transfer"></i> Tahsilat / Ödeme Yap
+                        </button>
+                        <button class="btn btn-secondary" id="btn-open-new-expense">
+                            <i class="fa-solid fa-receipt"></i> Gider / Masraf Ekle
+                        </button>
                         <button class="btn btn-primary" id="btn-open-new-customer">
                             <i class="fa-solid fa-user-plus"></i> Yeni Cari Tanımla
                         </button>

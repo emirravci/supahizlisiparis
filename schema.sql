@@ -19,9 +19,13 @@ create table if not exists products (
     min_stock numeric default 5 not null,
     shelf_location text,
     notes text,
+    image_url text,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- Var olan tablolar için güvenli kolon kontrolü
+alter table products add column if not exists image_url text;
 
 -- 1.2 Fiyat Listeleri Başlık Tablosu
 create table if not exists price_lists (
@@ -303,3 +307,70 @@ select
 from stock_movements sm
 join products p on sm.product_id = p.id
 left join customers c on sm.customer_id = c.id;
+
+-- =======================================================
+-- 5. SUPABASE STORAGE (ÜRÜN GÖRSELLERİ İÇİN BUCKET)
+-- =======================================================
+
+-- product-images bucket'ı (Public)
+insert into storage.buckets (id, name, public)
+values ('product-images', 'product-images', true)
+on conflict (id) do update set public = true;
+
+-- Bucket Güvenlik Politikaları
+drop policy if exists "Public Read Product Images" on storage.objects;
+create policy "Public Read Product Images"
+on storage.objects for select
+using (bucket_id = 'product-images');
+
+drop policy if exists "Authenticated Insert Product Images" on storage.objects;
+create policy "Authenticated Insert Product Images"
+on storage.objects for insert
+to authenticated
+with check (bucket_id = 'product-images');
+
+drop policy if exists "Authenticated Update Product Images" on storage.objects;
+create policy "Authenticated Update Product Images"
+on storage.objects for update
+to authenticated
+using (bucket_id = 'product-images');
+
+drop policy if exists "Authenticated Delete Product Images" on storage.objects;
+create policy "Authenticated Delete Product Images"
+on storage.objects for delete
+to authenticated
+using (bucket_id = 'product-images');
+
+-- =======================================================
+-- 6. CARİ & KASA HAREKETLERİ (TAHSİLAT, ÖDEME, VERESİYE, GİDER)
+-- =======================================================
+
+create table if not exists customer_transactions (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid references auth.users(id) default auth.uid() not null,
+    customer_id uuid references customers(id) on delete cascade, -- Boş ise genel dükkan gideridir
+    transaction_type text not null, -- 'SALE' (Satış), 'COLLECTION' (Tahsilat), 'PAYMENT' (Ödeme), 'EXPENSE' (Genel Gider/Masraf)
+    payment_method text default 'Nakit' not null, -- 'Nakit', 'Kredi Kartı', 'Havale/EFT', 'Açık Hesap'
+    debt numeric default 0 not null, -- Borç (Müşterinin borçlandığı tutar)
+    credit numeric default 0 not null, -- Alacak (Müşteriden tahsil edilen veya tedarikçiye ödenen)
+    amount numeric default 0 not null, -- İşlem Tutarı
+    reference_id uuid, -- sale_id veya proposal_id
+    receipt_no text, -- Belge / Fiş / Dekont No
+    description text,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- İndeksler
+create index if not exists idx_cust_trans_user on customer_transactions(user_id);
+create index if not exists idx_cust_trans_customer on customer_transactions(customer_id);
+create index if not exists idx_cust_trans_created on customer_transactions(created_at desc);
+
+-- RLS Güvenlik Politikaları
+alter table customer_transactions enable row level security;
+
+drop policy if exists "Users can manage their own customer transactions" on customer_transactions;
+create policy "Users can manage their own customer transactions"
+on customer_transactions for all to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+

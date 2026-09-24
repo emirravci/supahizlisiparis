@@ -30,13 +30,62 @@ if (dashViewAllMovements) {
     dashViewAllMovements.addEventListener('click', () => showView('movements'));
 }
 
+// Sayfa açıldığında son bilinen verileri önbellekten anında göster (F5'te 0 görünmesini önler)
+function restoreCachedDashboardStats() {
+    try {
+        const cached = localStorage.getItem('nalbur_dashboard_stats');
+        if (cached) {
+            const data = JSON.parse(cached);
+            if (statTotalProducts && data.totalProducts !== undefined) {
+                statTotalProducts.innerText = formatNumber(data.totalProducts);
+            }
+            if (statTotalStock && data.totalStock !== undefined) {
+                statTotalStock.innerText = formatNumber(data.totalStock);
+            }
+            if (statCriticalCount && data.criticalCount !== undefined) {
+                statCriticalCount.innerText = formatNumber(data.criticalCount);
+            }
+            if (statTodayRevenue && data.todayRevenue !== undefined) {
+                statTodayRevenue.innerText = formatCurrency(data.todayRevenue);
+            }
+            if (criticalBadgeCount && data.criticalCount !== undefined) {
+                criticalBadgeCount.innerText = `${data.criticalCount} Ürün`;
+            }
+        }
+    } catch (e) {
+        console.warn("Önbellek okunamadı:", e);
+    }
+}
+restoreCachedDashboardStats();
+
+let isLoadingDashboard = false;
+
 // Dashboard Sayfası Yüklendiğinde Dinle
 document.addEventListener('view-dashboard-loaded', async () => {
     await loadDashboardData();
 });
 
 export async function loadDashboardData() {
-    if (!supabase) return;
+    if (!supabase || isLoadingDashboard) return;
+
+    // Oturumun hazır olduğunu kontrol et (RLS kuralları için auth.uid() gerekir)
+    try {
+        let { data: { session } } = await supabase.auth.getSession();
+        if (!session || !session.user) {
+            // Supabase auth depolama senkronizasyonu için kısa bir tolerans ver
+            await new Promise(res => setTimeout(res, 200));
+            const retry = await supabase.auth.getSession();
+            session = retry.data?.session;
+        }
+        if (!session || !session.user) {
+            console.warn("Dashboard: Oturum henüz aktif değil, veri çekimi ertelendi.");
+            return;
+        }
+    } catch (e) {
+        console.warn("Oturum kontrolü:", e);
+    }
+
+    isLoadingDashboard = true;
     showLoader();
     try {
         // Bugünün başlangıcı (00:00:00)
@@ -89,16 +138,27 @@ export async function loadDashboardData() {
         if (statTodayRevenue) statTodayRevenue.innerText = formatCurrency(todayRev);
         if (criticalBadgeCount) criticalBadgeCount.innerText = `${criticalProducts.length} Ürün`;
 
-        // 3. Kritik Stok Tablosunu Çiz
+        // 3. Son verileri önbelleğe kaydet (F5 yapıldığında hemen gösterilmek üzere)
+        try {
+            localStorage.setItem('nalbur_dashboard_stats', JSON.stringify({
+                totalProducts: totalProductKinds,
+                totalStock: totalStockCount,
+                criticalCount: criticalProducts.length,
+                todayRevenue: todayRev
+            }));
+        } catch (e) {}
+
+        // 4. Kritik Stok Tablosunu Çiz
         renderCriticalTable(criticalProducts);
 
-        // 4. Son İşlemler Tablosunu Çiz
+        // 5. Son İşlemler Tablosunu Çiz
         renderRecentMovementsTable(recentMovements);
 
     } catch (err) {
         console.error("Dashboard verisi yüklenirken hata:", err);
         showToast("Dükkan verileri yüklenirken hata oluştu.", "error");
     } finally {
+        isLoadingDashboard = false;
         hideLoader();
     }
 }

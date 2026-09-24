@@ -28,6 +28,14 @@ const productSellPrice = document.getElementById('product-sell-price');
 const productStock = document.getElementById('product-stock');
 const productMinStock = document.getElementById('product-min-stock');
 const productNotes = document.getElementById('product-notes');
+const productImageFile = document.getElementById('product-image-file');
+const productImageUrl = document.getElementById('product-image-url');
+const productImagePreview = document.getElementById('product-image-preview');
+const productImagePlaceholderIcon = document.getElementById('product-image-placeholder-icon');
+const productImageRemoveBtn = document.getElementById('product-image-remove-btn');
+
+// Durum (State)
+let selectedImageFile = null;
 
 // DOM Elemanları - Stok Girişi Modalı
 const stockInModal = document.getElementById('stock-in-modal');
@@ -214,11 +222,125 @@ function renderProductsTable(products) {
 }
 
 // ========================================================
+// GÖRSEL SEÇİMİ, SIKIŞTIRMA & SUPABASE STORAGE YÜKLEME
+// ========================================================
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // En fazla 5 MB
+
+if (productImageFile) {
+    productImageFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > MAX_IMAGE_SIZE) {
+            showToast("Fotoğraf boyutu 5 MB'dan büyük olamaz! Lütfen daha küçük bir görsel seçin.", "error");
+            productImageFile.value = '';
+            return;
+        }
+
+        selectedImageFile = file;
+
+        // Önizleme göster
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            if (productImagePreview) {
+                productImagePreview.src = event.target.result;
+                productImagePreview.style.display = 'block';
+            }
+            if (productImagePlaceholderIcon) productImagePlaceholderIcon.style.display = 'none';
+            if (productImageRemoveBtn) productImageRemoveBtn.style.display = 'inline-block';
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+if (productImageRemoveBtn) {
+    productImageRemoveBtn.addEventListener('click', () => {
+        selectedImageFile = null;
+        if (productImageFile) productImageFile.value = '';
+        if (productImageUrl) productImageUrl.value = '';
+        if (productImagePreview) {
+            productImagePreview.src = '';
+            productImagePreview.style.display = 'none';
+        }
+        if (productImagePlaceholderIcon) productImagePlaceholderIcon.style.display = 'block';
+        if (productImageRemoveBtn) productImageRemoveBtn.style.display = 'none';
+    });
+}
+
+// Tarayıcı İçi Otomatik Görsel Sıkıştırma (800px genişlik ve ~80 KB'a optimize eder)
+async function compressImage(file, maxWidth = 800, quality = 0.82) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    resolve(blob || file);
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => resolve(file);
+        };
+        reader.onerror = () => resolve(file);
+    });
+}
+
+// Supabase Storage'a Yükleme
+async function uploadProductImage(file, prodId) {
+    if (!supabase || !file) return null;
+
+    try {
+        const compressedBlob = await compressImage(file, 800, 0.82);
+        const fileName = `${prodId || 'item'}_${Date.now()}.jpg`;
+        const filePath = `catalog/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(filePath, compressedBlob, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: 'image/jpeg'
+            });
+
+        if (uploadError) {
+            console.warn("Storage yükleme uyarısı (Bucket yok veya RLS):", uploadError);
+            return null;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(filePath);
+
+        return publicUrl;
+    } catch (err) {
+        console.error("Görsel yüklenirken hata:", err);
+        return null;
+    }
+}
+
+// ========================================================
 // YENİ ÜRÜN / DÜZENLEME MODAL İŞLEMLERİ
 // ========================================================
 function openProductModal(product = null) {
     if (!productModal) return;
     productForm.reset();
+    selectedImageFile = null;
+    if (productImageFile) productImageFile.value = '';
 
     if (product) {
         // Düzenleme modu
@@ -234,6 +356,25 @@ function openProductModal(product = null) {
         productStock.value = product.stock_quantity || 0;
         productMinStock.value = product.min_stock || 5;
         productNotes.value = product.notes || '';
+
+        // Görsel önizlemesi
+        if (product.image_url) {
+            if (productImageUrl) productImageUrl.value = product.image_url;
+            if (productImagePreview) {
+                productImagePreview.src = product.image_url;
+                productImagePreview.style.display = 'block';
+            }
+            if (productImagePlaceholderIcon) productImagePlaceholderIcon.style.display = 'none';
+            if (productImageRemoveBtn) productImageRemoveBtn.style.display = 'inline-block';
+        } else {
+            if (productImageUrl) productImageUrl.value = '';
+            if (productImagePreview) {
+                productImagePreview.src = '';
+                productImagePreview.style.display = 'none';
+            }
+            if (productImagePlaceholderIcon) productImagePlaceholderIcon.style.display = 'block';
+            if (productImageRemoveBtn) productImageRemoveBtn.style.display = 'none';
+        }
     } else {
         // Yeni ürün modu
         productModalTitle.innerHTML = `<i class="fa-solid fa-boxes-stacked" style="color: var(--accent-primary);"></i> Yeni Nalbur Ürünü`;
@@ -241,6 +382,13 @@ function openProductModal(product = null) {
         productStock.value = 0;
         productMinStock.value = 5;
         productBuyPrice.value = 0;
+        if (productImageUrl) productImageUrl.value = '';
+        if (productImagePreview) {
+            productImagePreview.src = '';
+            productImagePreview.style.display = 'none';
+        }
+        if (productImagePlaceholderIcon) productImagePlaceholderIcon.style.display = 'block';
+        if (productImageRemoveBtn) productImageRemoveBtn.style.display = 'none';
     }
 
     productModal.classList.add('active');
@@ -248,6 +396,7 @@ function openProductModal(product = null) {
 
 function closeProductModal() {
     if (productModal) productModal.classList.remove('active');
+    selectedImageFile = null;
 }
 
 if (btnOpenNewProduct) btnOpenNewProduct.addEventListener('click', () => openProductModal());
@@ -276,6 +425,20 @@ if (productForm) {
 
         showLoader();
         try {
+            let finalImageUrl = productImageUrl ? productImageUrl.value.trim() : null;
+
+            // Yeni görsel dosyası seçildiyse Supabase Storage'a yükle
+            if (selectedImageFile) {
+                const uploadedUrl = await uploadProductImage(selectedImageFile, id);
+                if (uploadedUrl) {
+                    finalImageUrl = uploadedUrl;
+                } else {
+                    showToast("Görsel Storage'a yüklenemedi (Supabase'de 'product-images' bucket'ı oluşturulmalı), ürün görsel olmadan kaydediliyor.", "info");
+                }
+            }
+
+            payload.image_url = finalImageUrl || null;
+
             if (id) {
                 // Güncelleme
                 const { error } = await supabase.from('products').update(payload).eq('id', id);

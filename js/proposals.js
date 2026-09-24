@@ -718,10 +718,31 @@ function confirmConvertToSale(proposal) {
                     }
                 }
 
-                // 3. Teklif Durumunu Güncelle (APPROVED)
+                // 3. Cari Hareketi Kaydı & Müşteri Borç Güncelleme
+                if (proposal.customer_id) {
+                    await supabase.from('customer_transactions').insert([{
+                        customer_id: proposal.customer_id,
+                        transaction_type: 'SALE',
+                        payment_method: 'Açık Hesap',
+                        debt: proposal.total_amount,
+                        credit: 0,
+                        amount: proposal.total_amount,
+                        reference_id: saleData.id,
+                        receipt_no: proposal.proposal_no,
+                        description: `Teklif Onayı Satışı (#${proposal.proposal_no})`
+                    }]);
+
+                    const { data: custData } = await supabase.from('customers').select('balance').eq('id', proposal.customer_id).single();
+                    if (custData) {
+                        const newBal = (Number(custData.balance) || 0) - Number(proposal.total_amount);
+                        await supabase.from('customers').update({ balance: newBal }).eq('id', proposal.customer_id);
+                    }
+                }
+
+                // 4. Teklif Durumunu Güncelle (APPROVED)
                 await supabase.from('proposals').update({ status: 'APPROVED' }).eq('id', proposal.id);
 
-                showToast(`Teklif #${proposal.proposal_no} onaylandı, satış kaydedildi ve stoklar düşüldü!`, "success");
+                showToast(`Teklif #${proposal.proposal_no} onaylandı, satış kaydedildi, stoklar düşüldü ve cariye işlendi!`, "success");
                 await fetchProposals();
 
             } catch (err) {
