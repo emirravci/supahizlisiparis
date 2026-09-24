@@ -620,21 +620,21 @@ aside.sidebar {
 }
 
 /* Sidebar Laptop / Masaüstünde Kapatıldığında / Daraltıldığında */
-html.sidebar-init-collapsed aside.sidebar,
+html.sidebar-collapsed aside.sidebar,
 body.sidebar-collapsed aside.sidebar {
     transform: translateX(-100%);
     visibility: hidden;
     pointer-events: none;
 }
 
-html.sidebar-init-collapsed main.main-content,
+html.sidebar-collapsed main.main-content,
 body.sidebar-collapsed main.main-content {
     margin-left: 0;
     width: 100%;
     max-width: 100%;
 }
 
-html.sidebar-init-collapsed .mobile-header,
+html.sidebar-collapsed .mobile-header,
 body.sidebar-collapsed .mobile-header {
     display: flex;
     position: sticky;
@@ -642,7 +642,7 @@ body.sidebar-collapsed .mobile-header {
     z-index: 500;
 }
 
-html.sidebar-init-collapsed .mobile-menu-btn,
+html.sidebar-collapsed .mobile-menu-btn,
 body.sidebar-collapsed .mobile-menu-btn {
     display: flex;
 }
@@ -1933,6 +1933,7 @@ main.main-content {
     transition: opacity 0.25s ease;
 }
 
+body.sidebar-open .sidebar-backdrop,
 .sidebar-backdrop.active {
     display: block;
     opacity: 1;
@@ -2018,7 +2019,7 @@ main.main-content {
     background: var(--bg-card);
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
     .catalog-builder-container {
         grid-template-columns: 1fr;
     }

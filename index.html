@@ -9,15 +9,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Proje CSS -->
-    <link rel="stylesheet" href="css/style.css?v=4.1">
+    <link rel="stylesheet" href="css/style.css?v=4.2">
 
     <!-- Başlangıç Menü Durumu Belirleme (Flicker Önleme) -->
     <script>
         (function() {
             try {
-                var isSavedCollapsed = localStorage.getItem('nalbur_sidebar_collapsed') === 'true';
-                if (window.innerWidth <= 1100 || isSavedCollapsed) {
-                    document.documentElement.classList.add('sidebar-init-collapsed');
+                if (window.innerWidth > 1024 && localStorage.getItem('nalbur_sidebar_collapsed') === 'true') {
+                    document.documentElement.classList.add('sidebar-collapsed');
                 }
             } catch(e) {}
         })();
@@ -1681,7 +1680,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Modüler Uygulama Scriptleri -->
-    <script src="js/supabase.js?v=4.1" type="module"></script>
+    <script src="js/supabase.js?v=4.2" type="module"></script>
     <script src="js/dashboard.js?v=4.0" type="module"></script>
     <script src="js/products.js?v=4.0" type="module"></script>
     <script src="js/pricelists.js?v=4.0" type="module"></script>

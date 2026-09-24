@@ -67,81 +67,48 @@ const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
 const sidebarBottomCloseBtn = document.getElementById('sidebar-bottom-close-btn');
 const mNavMenuBtn = document.getElementById('m-nav-menu');
 
-let isSidebarTransitioning = false;
-
-function isMobileScreen() {
-    return window.innerWidth <= 1100;
+export function isMobile() {
+    return window.innerWidth <= 1024;
 }
 
 export function openSidebar(e) {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-    if (isSidebarTransitioning) return;
-    isSidebarTransitioning = true;
-    setTimeout(() => { isSidebarTransitioning = false; }, 200);
 
-    const mobile = isMobileScreen();
-    document.documentElement.classList.remove('sidebar-init-collapsed');
-    document.body.classList.remove('sidebar-collapsed');
-    document.body.classList.add('sidebar-open');
-
-    if (appSidebar) {
-        appSidebar.classList.remove('is-closed');
-        if (mobile) {
-            appSidebar.classList.add('mobile-open');
-        }
-    }
-
-    if (mobile) {
-        if (sidebarBackdrop) {
-            sidebarBackdrop.classList.add('active');
-        }
+    if (isMobile()) {
+        document.body.classList.add('sidebar-open');
         document.body.style.overflow = 'hidden';
     } else {
-        if (sidebarBackdrop) {
-            sidebarBackdrop.classList.remove('active');
-        }
-        document.body.style.overflow = '';
+        document.documentElement.classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
         try { localStorage.setItem('nalbur_sidebar_collapsed', 'false'); } catch (err) {}
     }
 }
 
 export function closeSidebar(e) {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-    if (isSidebarTransitioning) return;
-    isSidebarTransitioning = true;
-    setTimeout(() => { isSidebarTransitioning = false; }, 200);
 
-    const mobile = isMobileScreen();
-    document.body.classList.add('sidebar-collapsed');
-    document.body.classList.remove('sidebar-open');
-
-    if (appSidebar) {
-        appSidebar.classList.remove('mobile-open');
-        appSidebar.classList.add('is-closed');
-    }
-
-    if (sidebarBackdrop) {
-        sidebarBackdrop.classList.remove('active');
-    }
-    document.body.style.overflow = '';
-
-    if (!mobile) {
+    if (isMobile()) {
+        document.body.classList.remove('sidebar-open');
+        document.body.style.overflow = '';
+    } else {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
         try { localStorage.setItem('nalbur_sidebar_collapsed', 'true'); } catch (err) {}
     }
 }
 
 export function toggleSidebar(e) {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-    const mobile = isMobileScreen();
-    if (mobile) {
-        const isOpen = appSidebar && appSidebar.classList.contains('mobile-open');
-        if (isOpen) {
+
+    if (isMobile()) {
+        if (document.body.classList.contains('sidebar-open')) {
             closeSidebar(e);
         } else {
             openSidebar(e);
         }
     } else {
-        const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+        const isCollapsed = document.body.classList.contains('sidebar-collapsed') ||
+                            document.documentElement.classList.contains('sidebar-collapsed');
         if (isCollapsed) {
             openSidebar(e);
         } else {
@@ -200,7 +167,7 @@ if (appSidebar) {
                 closeSidebar(e);
                 return;
             }
-            if (isMobileScreen()) {
+            if (isMobile()) {
                 closeSidebar(e);
             }
         });
@@ -231,51 +198,24 @@ if (appSidebar) {
     }, { passive: true });
 }
 
-// Ekran boyutuna göre başlangıç ve resize kontrolü
-let prevIsMobile = isMobileScreen();
-function syncSidebarOnResize() {
-    const currentIsMobile = isMobileScreen();
-    const isSavedCollapsed = localStorage.getItem('nalbur_sidebar_collapsed') === 'true';
-
-    if (currentIsMobile) {
-        // Mobilde başlangıçta kapalı olmalı (çekmece açık bırakılmadıysa)
-        if (!appSidebar?.classList.contains('mobile-open')) {
-            document.body.classList.add('sidebar-collapsed');
-            document.body.classList.remove('sidebar-open');
-            if (appSidebar) {
-                appSidebar.classList.remove('mobile-open');
-                appSidebar.classList.add('is-closed');
-            }
-            if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
-            document.body.style.overflow = '';
-        }
+// Başlangıç Masaüstü Tercihi Uygulama (Sayfa yenilendiğinde)
+if (!isMobile()) {
+    if (localStorage.getItem('nalbur_sidebar_collapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
     } else {
-        // Laptop/Masaüstü: Kullanıcı tercihine göre aç veya kapat
-        if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
-        document.body.style.overflow = '';
-        if (isSavedCollapsed) {
-            document.body.classList.add('sidebar-collapsed');
-            document.body.classList.remove('sidebar-open');
-            if (appSidebar) {
-                appSidebar.classList.remove('mobile-open');
-                appSidebar.classList.add('is-closed');
-            }
-        } else {
-            document.documentElement.classList.remove('sidebar-init-collapsed');
-            document.body.classList.remove('sidebar-collapsed');
-            document.body.classList.add('sidebar-open');
-            if (appSidebar) {
-                appSidebar.classList.remove('mobile-open');
-                appSidebar.classList.remove('is-closed');
-            }
-        }
+        document.documentElement.classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
     }
-    prevIsMobile = currentIsMobile;
 }
 
-window.addEventListener('resize', syncSidebarOnResize);
-// İlk yüklemede çalıştır
-syncSidebarOnResize();
+// Ekran genişliği değiştiğinde masaüstüne geçildiyse mobil kilidi temizle
+window.addEventListener('resize', () => {
+    if (!isMobile()) {
+        document.body.classList.remove('sidebar-open');
+        document.body.style.overflow = '';
+    }
+});
 
 // ========================================================
 // GLOBAL LOADER (SPINNER)
@@ -391,7 +331,7 @@ export function showView(viewId, extraData = null) {
     } catch (e) {}
 
     // Mobilde görünüm değiştiğinde çekmeceyi otomatik kapat
-    if (window.innerWidth <= 1100) {
+    if (isMobile()) {
         closeSidebar();
     }
 
