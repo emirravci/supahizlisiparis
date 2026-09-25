@@ -614,7 +614,7 @@ select.input-control {
     min-height: 100vh;
 }
 
-/* Sidebar - Masaüstü Görünümü */
+/* Sidebar - Masaüstü ve Genel Görünüm */
 aside.sidebar {
     position: fixed;
     top: 0;
@@ -625,51 +625,44 @@ aside.sidebar {
     border-right: 1px solid var(--border-subtle);
     display: flex;
     flex-direction: column;
-    z-index: 100;
-    transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
 }
 
-/* Masaüstü Daraltılmış (Collapsed) Yan Menü */
-body.sidebar-collapsed aside.sidebar {
-    width: var(--sidebar-collapsed-width);
-}
-body.sidebar-collapsed aside.sidebar .sidebar-logo-title,
-body.sidebar-collapsed aside.sidebar .nav-item button span,
-body.sidebar-collapsed aside.sidebar .user-badge {
-    display: none !important;
-}
-body.sidebar-collapsed aside.sidebar .sidebar-header {
-    justify-content: center;
-    padding: 0;
-}
-body.sidebar-collapsed aside.sidebar .sidebar-logo-icon {
-    margin: 0;
-}
-body.sidebar-collapsed aside.sidebar .sidebar-toggle-btn {
-    display: none;
-}
-body.sidebar-collapsed aside.sidebar .nav-item button {
-    justify-content: center;
-    padding: 0.85rem 0;
-}
-body.sidebar-collapsed aside.sidebar .nav-item button i {
-    font-size: 1.25rem;
-    margin: 0;
-}
-body.sidebar-collapsed aside.sidebar .sidebar-footer {
-    justify-content: center;
-    padding: 1rem 0;
-}
-body.sidebar-collapsed main.main-content {
-    margin-left: var(--sidebar-collapsed-width);
+/* Masaüstünde Sidebar Açıkken Üst Bar ve Ana İçerik */
+.app-top-header,
+.mobile-header {
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Masaüstünde mobil elemanlar gizlidir */
+main.main-content {
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: calc(100vh - var(--header-height));
+    padding: 1.5rem;
+}
+
+/* Masaüstünde Sidebar Kapatıldığında (Desktop Closed Mode) */
+body.desktop-sidebar-closed aside.sidebar {
+    transform: translateX(-100%) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+}
+
+body.desktop-sidebar-closed .app-top-header,
+body.desktop-sidebar-closed .mobile-header {
+    margin-left: 0 !important;
+}
+
+body.desktop-sidebar-closed main.main-content {
+    margin-left: 0 !important;
+}
+
+/* Masaüstünde gizli elemanlar (alt bar hariç, üst bar ve menü butonu artık her yerde açık!) */
 .sidebar-backdrop { display: none; }
-.sidebar-close-nav-item { display: none; }
-.mobile-menu-btn { display: none; }
-.mobile-header { display: none; }
 .mobile-bottom-nav { display: none; }
 
 .sidebar-header {
@@ -708,24 +701,27 @@ body.sidebar-collapsed main.main-content {
     color: var(--accent-primary);
 }
 
-.sidebar-toggle-btn {
-    display: flex;
+.sidebar-toggle-btn,
+#sidebar-close-btn {
+    display: flex !important;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: var(--radius-sm);
     color: var(--text-muted);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-subtle);
     cursor: pointer;
     transition: var(--transition);
+    font-size: 1.1rem;
 }
 
-.sidebar-toggle-btn:hover {
-    color: var(--text-main);
-    background: var(--bg-card);
-    border-color: var(--border-strong);
+.sidebar-toggle-btn:hover,
+#sidebar-close-btn:hover {
+    color: var(--accent-danger) !important;
+    background: var(--accent-danger-bg) !important;
+    border-color: rgba(239, 68, 68, 0.35) !important;
 }
 
 .sidebar-nav {
@@ -823,19 +819,45 @@ body.sidebar-collapsed main.main-content {
 }
 
 /* Mobil Üst Bar */
-.mobile-header {
-    display: none;
+/* Ana Uygulama Üst Barı (Tüm Ekranlar) */
+.mobile-header,
+.app-top-header {
+    display: flex !important;
     height: var(--header-height);
-    background: rgba(30, 41, 59, 0.88);
+    background: rgba(18, 24, 38, 0.92);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border-subtle);
     align-items: center;
     justify-content: space-between;
-    padding: 0 1rem;
+    padding: 0 1.25rem;
     position: sticky;
     top: 0;
-    z-index: 90;
+    z-index: 10005 !important;
+}
+
+.mobile-menu-btn,
+.menu-toggle-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
+    font-size: 1.25rem;
+    color: var(--text-main);
+    cursor: pointer;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+
+.mobile-menu-btn:hover,
+.menu-toggle-btn:hover {
+    color: var(--accent-primary);
+    background: var(--bg-card);
+    border-color: var(--accent-primary);
 }
 
 .mobile-brand {
@@ -2339,8 +2361,12 @@ main.main-content {
     }
 
     /* Mobil Üst Bar ve Alt Menü */
-    .mobile-header {
+    .mobile-header,
+    .app-top-header {
         display: flex !important;
+        margin-left: 0 !important;
+        padding: 0 1rem !important;
+        z-index: 10005 !important;
     }
 
     .mobile-bottom-nav {

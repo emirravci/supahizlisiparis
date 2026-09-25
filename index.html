@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Proje CSS -->
-    <link rel="stylesheet" href="css/style.css?v=7.0">
+    <link rel="stylesheet" href="css/style.css?v=8.1">
 
 
 </head>
@@ -830,8 +830,8 @@
             <div class="sidebar-header">
                 <div class="sidebar-logo-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
                 <div class="sidebar-logo-title">Supa<span>HızlıSatış</span></div>
-                <button class="btn-icon sidebar-toggle-btn" id="sidebar-close-btn" title="Menüyü Kapat / Daralt" aria-label="Menüyü Kapat">
-                    <i class="fa-solid fa-bars-staggered"></i>
+                <button class="btn-icon sidebar-toggle-btn" id="sidebar-close-btn" title="Menüyü Kapat" aria-label="Menüyü Kapat">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
@@ -879,10 +879,10 @@
             </div>
         </aside>
 
-        <!-- Mobil / Laptop Üst Bar -->
-        <header class="mobile-header">
+        <!-- Uygulama Üst Barı (Tüm Ekranlar) -->
+        <header class="mobile-header app-top-header" id="app-top-header">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Menüyü Aç/Kapat" title="Menü">
+                <button class="mobile-menu-btn menu-toggle-btn" id="mobile-menu-toggle" type="button" onclick="window.toggleSidebar && window.toggleSidebar()" aria-label="Menüyü Aç/Kapat" title="Menüyü Aç / Kapat">
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="mobile-brand">
@@ -890,9 +890,12 @@
                     <span>SupaHızlıSatış</span>
                 </div>
             </div>
-            <button type="button" class="btn-icon-logout" id="btn-logout-mobile" title="Çıkış Yap">
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </button>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span id="top-user-email" style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500;"></span>
+                <button type="button" class="btn-icon-logout" id="btn-logout-mobile" title="Çıkış Yap">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
         </header>
 
         <!-- Mobil Alt Menü Barı (5 Tuşlu Ergonomik Standart) -->
@@ -1777,16 +1780,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Modüler Uygulama Scriptleri -->
-    <script src="js/supabase.js?v=7.0" type="module"></script>
-    <script src="js/dashboard.js?v=7.0" type="module"></script>
-    <script src="js/products.js?v=7.0" type="module"></script>
-    <script src="js/pricelists.js?v=7.0" type="module"></script>
-    <script src="js/pos.js?v=7.0" type="module"></script>
-    <script src="js/customers.js?v=7.0" type="module"></script>
-    <script src="js/transactions.js?v=7.0" type="module"></script>
-    <script src="js/proposals.js?v=7.0" type="module"></script>
-    <script src="js/catalog.js?v=7.0" type="module"></script>
-    <script src="js/movements.js?v=7.0" type="module"></script>
+    <script src="js/supabase.js" type="module"></script>
+    <script src="js/dashboard.js" type="module"></script>
+    <script src="js/products.js" type="module"></script>
+    <script src="js/pricelists.js" type="module"></script>
+    <script src="js/pos.js" type="module"></script>
+    <script src="js/customers.js" type="module"></script>
+    <script src="js/transactions.js" type="module"></script>
+    <script src="js/proposals.js" type="module"></script>
+    <script src="js/catalog.js" type="module"></script>
+    <script src="js/movements.js" type="module"></script>
 
 </body>
 </html>

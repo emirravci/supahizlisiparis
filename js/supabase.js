@@ -66,38 +66,61 @@ const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
 const sidebarBottomCloseBtn = document.getElementById('sidebar-bottom-close-btn');
 const mNavMenuBtn = document.getElementById('m-nav-menu');
 
+let lastSidebarToggleTime = 0;
+
 export function isMobile() {
     return window.innerWidth <= 1024;
 }
 
-// Masaüstünde kayıtlı daraltma (collapsed) tercihi
+export function isSidebarOpen() {
+    if (isMobile()) {
+        return document.body.classList.contains('sidebar-open') || (appSidebar && appSidebar.classList.contains('mobile-open'));
+    } else {
+        return !document.body.classList.contains('desktop-sidebar-closed');
+    }
+}
+
+// Masaüstünde kayıtlı kapalı/açık tercihi
 try {
-    const savedCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-    if (savedCollapsed && !isMobile()) {
-        document.body.classList.add('sidebar-collapsed');
+    const savedDesktopClosed = localStorage.getItem('desktop_sidebar_closed') === 'true';
+    if (savedDesktopClosed && !isMobile()) {
+        document.body.classList.add('desktop-sidebar-closed');
     }
 } catch (e) {}
 
 export function openSidebar() {
-    if (isMobile()) {
-        document.body.classList.add('sidebar-open');
-        if (appSidebar) appSidebar.classList.add('mobile-open');
-        if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    } else {
-        document.body.classList.remove('sidebar-collapsed');
-        try { localStorage.setItem('sidebar_collapsed', 'false'); } catch (e) {}
+    document.body.classList.remove('desktop-sidebar-closed');
+    document.body.classList.add('sidebar-open');
+    if (appSidebar) {
+        appSidebar.classList.add('mobile-open');
     }
+    if (sidebarBackdrop && isMobile()) {
+        sidebarBackdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    try { localStorage.setItem('desktop_sidebar_closed', 'false'); } catch (e) {}
 }
 
 export function closeSidebar() {
+    document.body.classList.add('desktop-sidebar-closed');
     document.body.classList.remove('sidebar-open');
-    if (appSidebar) appSidebar.classList.remove('mobile-open');
-    if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
-    document.body.style.overflow = '';
+    if (appSidebar) {
+        appSidebar.classList.remove('mobile-open');
+    }
+    if (sidebarBackdrop) {
+        sidebarBackdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    try { localStorage.setItem('desktop_sidebar_closed', 'true'); } catch (e) {}
 }
 
 export function toggleSidebar() {
+    const now = Date.now();
+    if (now - lastSidebarToggleTime < 180) {
+        return; // Hızlı ardışık veya çift tıklama koruması
+    }
+    lastSidebarToggleTime = now;
+
     if (isMobile()) {
         if (document.body.classList.contains('sidebar-open') || (appSidebar && appSidebar.classList.contains('mobile-open'))) {
             closeSidebar();
@@ -105,8 +128,11 @@ export function toggleSidebar() {
             openSidebar();
         }
     } else {
-        const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
-        try { localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false'); } catch (e) {}
+        if (document.body.classList.contains('desktop-sidebar-closed')) {
+            openSidebar();
+        } else {
+            closeSidebar();
+        }
     }
 }
 
@@ -117,78 +143,99 @@ export const toggleMobileSidebar = toggleSidebar;
 window.openSidebar = openSidebar;
 window.closeSidebar = closeSidebar;
 window.toggleSidebar = toggleSidebar;
+window.isMobile = isMobile;
+window.isSidebarOpen = isSidebarOpen;
 
-// Buton Olay Dinleyicileri (Menüyü Açma / Kapatma / Daraltma)
-if (mobileMenuToggle) {
-    mobileMenuToggle.addEventListener('click', toggleSidebar);
-}
-if (mNavMenuBtn) {
-    mNavMenuBtn.addEventListener('click', toggleSidebar);
-}
-if (sidebarCloseBtn) {
-    sidebarCloseBtn.addEventListener('click', () => {
-        if (isMobile()) {
-            closeSidebar();
-        } else {
+// Buton Olay Dinleyicileri (Tek bir kez bağlanır - Idempotent Guard)
+if (!window.__app_sidebar_listeners_bound) {
+    window.__app_sidebar_listeners_bound = true;
+
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             toggleSidebar();
-        }
-    });
-}
-if (sidebarBottomCloseBtn) {
-    sidebarBottomCloseBtn.addEventListener('click', closeSidebar);
-}
-if (sidebarBackdrop) {
-    sidebarBackdrop.addEventListener('click', closeSidebar);
-}
-
-// Menü içi butonlara tıklandığında mobilde çekmeceyi otomatik kapat
-if (appSidebar) {
-    appSidebar.querySelectorAll('.sidebar-nav li').forEach(item => {
-        item.addEventListener('click', () => {
-            if (isMobile()) {
-                closeSidebar();
-            }
         });
-    });
+    }
+    if (mNavMenuBtn) {
+        mNavMenuBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleSidebar();
+        });
+    }
+    if (sidebarCloseBtn) {
+        sidebarCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSidebar();
+        });
+    }
+    if (sidebarBottomCloseBtn) {
+        sidebarBottomCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSidebar();
+        });
+    }
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeSidebar();
+        });
+    }
 
-    // Parmakla Sola Kaydırma (Swipe-Left) ile Kapatma
-    let touchStartX = 0;
-    let touchStartY = 0;
+    // Menü içi linklere tıklandığında mobilde çekmeceyi otomatik kapat
+    if (appSidebar) {
+        appSidebar.querySelectorAll('.sidebar-nav li:not(.sidebar-close-nav-item)').forEach(item => {
+            item.addEventListener('click', () => {
+                if (isMobile()) {
+                    closeSidebar();
+                }
+            });
+        });
 
-    appSidebar.addEventListener('touchstart', (e) => {
-        if (e.changedTouches && e.changedTouches.length > 0) {
-            touchStartX = e.changedTouches[0].clientX;
-            touchStartY = e.changedTouches[0].clientY;
-        }
-    }, { passive: true });
+        // Parmakla Sola Kaydırma (Swipe-Left) ile Kapatma
+        let touchStartX = 0;
+        let touchStartY = 0;
 
-    appSidebar.addEventListener('touchend', (e) => {
-        if (e.changedTouches && e.changedTouches.length > 0) {
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-            const diffX = touchEndX - touchStartX;
-            const diffY = Math.abs(touchEndY - touchStartY);
+        appSidebar.addEventListener('touchstart', (e) => {
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                touchStartX = e.changedTouches[0].clientX;
+                touchStartY = e.changedTouches[0].clientY;
+            }
+        }, { passive: true });
 
-            if (diffX < -45 && diffY < 80) {
+        appSidebar.addEventListener('touchend', (e) => {
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diffX = touchEndX - touchStartX;
+                const diffY = Math.abs(touchEndY - touchStartY);
+
+                if (diffX < -45 && diffY < 80) {
+                    closeSidebar();
+                }
+            }
+        }, { passive: true });
+    }
+
+    // ESC tuşuna basınca çekmeceyi kapat
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (document.body.classList.contains('sidebar-open')) {
                 closeSidebar();
             }
         }
-    }, { passive: true });
+    });
+
+    // Ekran genişliği masaüstüne çıktığında mobil açık durumunu temizle
+    window.addEventListener('resize', () => {
+        if (!isMobile() && document.body.classList.contains('sidebar-open')) {
+            closeSidebar();
+        }
+    });
 }
-
-// ESC tuşuna basınca çekmeceyi kapat
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
-        closeSidebar();
-    }
-});
-
-// Ekran genişliği masaüstüne çıktığında mobil açık durumunu temizle
-window.addEventListener('resize', () => {
-    if (!isMobile() && document.body.classList.contains('sidebar-open')) {
-        closeSidebar();
-    }
-});
 
 // ========================================================
 // GLOBAL LOADER (SPINNER)
@@ -449,6 +496,8 @@ function applySessionState(session) {
         if (authView) authView.style.display = 'none';
         if (appContainer) appContainer.style.display = 'block';
         if (currentUserEmail) currentUserEmail.innerText = session.user.email;
+        const topEmailEl = document.getElementById('top-user-email');
+        if (topEmailEl) topEmailEl.innerText = session.user.email;
         if (authForm) authForm.reset();
 
         // Oturum hazır olduğunu bildiren event'i yayınla
