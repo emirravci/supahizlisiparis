@@ -170,7 +170,7 @@ function renderCriticalTable(items) {
 
     if (items.length === 0) {
         criticalTbody.innerHTML = `
-            <tr>
+            <tr class="empty-state-row">
                 <td colspan="5" class="empty-state" style="padding: 1.5rem;">
                     <i class="fa-solid fa-circle-check" style="color: var(--accent-success); font-size: 1.8rem;"></i>
                     <p style="margin-top: 0.35rem;">Harika! Kritik seviyede tükenmekte olan ürün bulunmuyor.</p>
@@ -227,7 +227,7 @@ function renderRecentMovementsTable(movements) {
 
     if (movements.length === 0) {
         recentTbody.innerHTML = `
-            <tr>
+            <tr class="empty-state-row">
                 <td colspan="5" class="empty-state" style="padding: 1.5rem;">
                     <i class="fa-solid fa-clock-rotate-left" style="font-size: 1.8rem;"></i>
                     <p style="margin-top: 0.35rem;">Henüz kayıtlı bir stok veya satış hareketi yok.</p>

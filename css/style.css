@@ -2177,6 +2177,7 @@ main.main-content {
     font-weight: 800;
     padding: 2px 6px;
     border-radius: 4px;
+}
 .catalog-card-img-wrap {
     width: 100%;
     height: 120px;
@@ -2514,14 +2515,60 @@ main.main-content {
         gap: 0.75rem !important;
     }
 
-    @media (max-width: 580px) {
-        .quick-nav-grid {
-            grid-template-columns: 1fr !important;
-        }
+    #dashboard-view .view-title-group {
+        width: 100%;
+    }
+
+    #dashboard-view .view-title-group h2 {
+        font-size: 1.35rem;
+    }
+
+    #dashboard-view .view-title-group p {
+        max-width: 42rem;
+        line-height: 1.45;
+    }
+
+    #dashboard-view .view-header-actions {
+        width: 100%;
+        gap: 0.55rem;
+    }
+
+    #dashboard-view .view-header-actions .btn {
+        min-width: 0;
+        padding-inline: 0.75rem;
+    }
+
+    #dashboard-view .quick-nav-card {
+        min-width: 0;
+        padding: 0.85rem 0.8rem;
+        gap: 0.65rem;
+    }
+
+    #dashboard-view .quick-nav-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+
+    #dashboard-view .quick-nav-content {
+        min-width: 0;
+    }
+
+    #dashboard-view .quick-nav-title {
+        font-size: 0.86rem;
     }
 
     .dashboard-sections-grid {
-        grid-template-columns: 1fr;
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+        width: 100% !important;
+    }
+
+    .dashboard-sections-grid .card-panel {
+        width: 100% !important;
+        min-width: 0 !important;
     }
 
     /* POS Mobile Tab Switcher Layout */
@@ -2645,16 +2692,34 @@ main.main-content {
     }
 
     .dashboard-sections-grid {
+        display: flex !important;
+        flex-direction: column !important;
         grid-template-columns: 1fr !important;
         gap: 1.25rem !important;
     }
 
+    #dashboard-view .card-panel {
+        min-width: 0;
+    }
+
     .card-panel-header {
         padding: 0.85rem 1rem !important;
+        gap: 0.65rem;
     }
 
     .card-panel-header h3 {
         font-size: 0.95rem !important;
+        min-width: 0;
+        line-height: 1.3;
+    }
+
+    #dashboard-view .card-panel-header h3 {
+        overflow-wrap: anywhere;
+    }
+
+    #dashboard-view .card-panel-header .badge,
+    #dashboard-view .card-panel-header .btn {
+        flex-shrink: 0;
     }
 
     /* Dashboard Tablolarını Mobilde Kart Listesine Dönüştür */
@@ -2675,20 +2740,22 @@ main.main-content {
         display: flex !important;
         flex-direction: column !important;
         gap: 0.65rem !important;
-        padding: 0.75rem !important;
+        padding: 0 !important;
     }
 
-    .dashboard-sections-grid .data-table tbody tr.dashboard-table-row {
+    .dashboard-sections-grid .data-table tbody tr.dashboard-table-row,
+    .dashboard-sections-grid .data-table tbody tr:not(.empty-state-row) {
         display: block !important;
-        background: rgba(15, 23, 42, 0.65) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border-subtle) !important;
         border-radius: var(--radius-md) !important;
-        padding: 0.85rem 0.95rem !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+        padding: 0.85rem 1rem !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
         transition: var(--transition);
     }
 
-    .dashboard-sections-grid .data-table tbody tr.dashboard-table-row:hover {
+    .dashboard-sections-grid .data-table tbody tr.dashboard-table-row:hover,
+    .dashboard-sections-grid .data-table tbody tr:not(.empty-state-row):hover {
         border-color: var(--accent-primary) !important;
     }
 
@@ -2696,27 +2763,45 @@ main.main-content {
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        padding: 0.4rem 0 !important;
+        gap: 0.75rem !important;
+        padding: 0.42rem 0 !important;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-        font-size: 0.85rem !important;
+        font-size: 0.875rem !important;
+        min-height: 32px !important;
+    }
+
+    .dashboard-sections-grid .data-table td:not(.dash-action-cell) > *:last-child {
+        min-width: 0;
+        max-width: 68%;
+        text-align: right;
+        overflow-wrap: anywhere;
     }
 
     .dashboard-sections-grid .data-table td::before {
         content: attr(data-label);
-        font-weight: 600;
+        font-weight: 700;
         color: var(--text-dim);
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         text-transform: uppercase;
-        letter-spacing: 0.03em;
+        letter-spacing: 0.04em;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    .dashboard-sections-grid .data-table td[data-label="Ürün"] {
+        align-items: flex-start !important;
+        padding-top: 0.45rem !important;
+        padding-bottom: 0.45rem !important;
     }
 
     .dashboard-sections-grid .data-table td:last-child {
         border-bottom: none !important;
-        padding-top: 0.55rem !important;
     }
 
     .dashboard-sections-grid .data-table td.dash-action-cell {
         justify-content: stretch !important;
+        border-bottom: none !important;
+        padding-top: 0.65rem !important;
     }
 
     .dashboard-sections-grid .data-table td.dash-action-cell::before {
@@ -2725,32 +2810,74 @@ main.main-content {
 
     .dashboard-sections-grid .data-table td.dash-action-cell .quick-stock-in-btn {
         width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
         justify-content: center !important;
-        padding: 0.6rem 1rem !important;
+        padding: 0.65rem 1rem !important;
         font-size: 0.88rem !important;
         font-weight: 700 !important;
         border-radius: var(--radius-sm) !important;
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        border: none !important;
+        color: #fff !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+        cursor: pointer;
+    }
+
+    .dashboard-sections-grid .data-table tr.empty-state-row,
+    .dashboard-sections-grid .data-table tr:has(.empty-state) {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 1.25rem 0 !important;
+    }
+
+    .dashboard-sections-grid .data-table td.empty-state {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        border-bottom: none !important;
+        padding: 1rem !important;
+        color: var(--text-dim) !important;
+    }
+
+    .dashboard-sections-grid .data-table td.empty-state::before {
+        display: none !important;
     }
 
     .dash-prod-name {
         font-weight: 700;
         color: var(--text-main);
         font-size: 0.92rem;
+        text-align: right;
+        overflow-wrap: anywhere;
     }
 
     .dash-shelf-tag {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         color: var(--accent-primary);
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        margin-top: 2px;
+        margin-top: 3px;
+        background: rgba(99, 102, 241, 0.1);
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
     }
 
     .dash-stock-alert {
-        color: var(--accent-danger);
-        font-weight: 800;
-        font-size: 0.95rem;
+        color: var(--accent-danger) !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+    }
+
+    #dashboard-view .dash-date-cell,
+    #dashboard-view .dash-prod-cell,
+    #dashboard-view .dash-qty-cell,
+    #dashboard-view .dash-price-cell {
+        overflow-wrap: anywhere;
     }
 }
 
@@ -2764,6 +2891,29 @@ main.main-content {
         gap: 0.5rem !important;
     }
 
+    #dashboard-view .view-header-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #dashboard-view .view-header-actions .btn {
+        width: 100%;
+    }
+
+    #dashboard-view .quick-nav-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+
+    #dashboard-view .quick-nav-header h3 {
+        font-size: 0.98rem;
+    }
+
+    #dashboard-view .quick-nav-section {
+        margin-bottom: 1.35rem;
+    }
+
     .stat-card {
         padding: 0.65rem 0.75rem !important;
         gap: 0.5rem !important;
@@ -2771,6 +2921,20 @@ main.main-content {
 
     .stat-number {
         font-size: 1.05rem !important;
+    }
+
+    #dashboard-view .stat-label {
+        white-space: normal;
+        line-height: 1.25 !important;
+    }
+
+    #dashboard-view .card-panel-header {
+        align-items: flex-start;
+    }
+
+    #dashboard-view .card-panel-header .badge,
+    #dashboard-view .card-panel-header .btn {
+        margin-top: 0.05rem;
     }
 
     .modal-card {
