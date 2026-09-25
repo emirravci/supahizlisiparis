@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Proje CSS -->
-    <link rel="stylesheet" href="css/style.css?v=6.0">
+    <link rel="stylesheet" href="css/style.css?v=7.0">
 
 
 </head>
@@ -828,110 +828,90 @@
         <!-- Masaüstü & Mobil Yan Menü (Sidebar) -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-logo-icon"><i class="fa-solid fa-hammer"></i></div>
-                <div class="sidebar-logo-title">Nalbur<span>Stok</span></div>
-                <button class="btn-icon" id="sidebar-close-btn" title="Menüyü Kapat / Daralt" aria-label="Menüyü Kapat">
-                    <i class="fa-solid fa-xmark"></i>
+                <div class="sidebar-logo-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div class="sidebar-logo-title">Supa<span>HızlıSatış</span></div>
+                <button class="btn-icon sidebar-toggle-btn" id="sidebar-close-btn" title="Menüyü Kapat / Daralt" aria-label="Menüyü Kapat">
+                    <i class="fa-solid fa-bars-staggered"></i>
                 </button>
             </div>
 
             <ul class="sidebar-nav">
-                <li class="nav-item active" id="nav-dashboard">
-                    <button><i class="fa-solid fa-chart-pie"></i><span>Özet Panel</span></button>
+                <li class="nav-item active" id="nav-dashboard" title="Özet Panel">
+                    <button type="button"><i class="fa-solid fa-chart-pie"></i><span>Özet Panel</span></button>
                 </li>
-                <li class="nav-item" id="nav-pos">
-                    <button><i class="fa-solid fa-cash-register"></i><span>Hızlı Satış</span></button>
+                <li class="nav-item" id="nav-pos" title="Hızlı Satış">
+                    <button type="button"><i class="fa-solid fa-cash-register"></i><span>Hızlı Satış</span></button>
                 </li>
-                <li class="nav-item" id="nav-customer-transactions">
-                    <button><i class="fa-solid fa-money-bill-transfer"></i><span>Cari Hareketler</span></button>
+                <li class="nav-item" id="nav-customer-transactions" title="Cari Hareketler">
+                    <button type="button"><i class="fa-solid fa-money-bill-transfer"></i><span>Cari Hareketler</span></button>
                 </li>
-                <li class="nav-item" id="nav-customers">
-                    <button><i class="fa-solid fa-address-book"></i><span>Cari Hesaplar</span></button>
+                <li class="nav-item" id="nav-customers" title="Cari Hesaplar">
+                    <button type="button"><i class="fa-solid fa-address-book"></i><span>Cari Hesaplar</span></button>
                 </li>
-                <li class="nav-item" id="nav-proposals">
-                    <button><i class="fa-solid fa-file-invoice-dollar"></i><span>Sipariş & Teklif</span></button>
+                <li class="nav-item" id="nav-proposals" title="Sipariş & Teklif">
+                    <button type="button"><i class="fa-solid fa-file-invoice-dollar"></i><span>Sipariş & Teklif</span></button>
                 </li>
-                <li class="nav-item" id="nav-products">
-                    <button><i class="fa-solid fa-boxes-stacked"></i><span>Ürünler & Stok</span></button>
+                <li class="nav-item" id="nav-products" title="Ürünler & Stok">
+                    <button type="button"><i class="fa-solid fa-boxes-stacked"></i><span>Ürünler & Stok</span></button>
                 </li>
-                <li class="nav-item" id="nav-pricelists">
-                    <button><i class="fa-solid fa-tags"></i><span>Fiyat Listeleri</span></button>
+                <li class="nav-item" id="nav-pricelists" title="Fiyat Listeleri">
+                    <button type="button"><i class="fa-solid fa-tags"></i><span>Fiyat Listeleri</span></button>
                 </li>
-                <li class="nav-item" id="nav-catalog">
-                    <button><i class="fa-solid fa-book-open"></i><span>Dijital Afiş (Katalog)</span></button>
+                <li class="nav-item" id="nav-catalog" title="Dijital Afiş (Katalog)">
+                    <button type="button"><i class="fa-solid fa-book-open"></i><span>Dijital Afiş (Katalog)</span></button>
                 </li>
-                <li class="nav-item" id="nav-movements">
-                    <button><i class="fa-solid fa-clock-rotate-left"></i><span>Stok Hareketleri</span></button>
+                <li class="nav-item" id="nav-movements" title="Stok Hareketleri">
+                    <button type="button"><i class="fa-solid fa-clock-rotate-left"></i><span>Stok Hareketleri</span></button>
                 </li>
                 <li class="nav-item sidebar-close-nav-item">
-                    <button id="sidebar-bottom-close-btn" class="btn-sidebar-close" title="Menüyü Kapat"><i class="fa-solid fa-xmark"></i><span>Menüyü Kapat</span></button>
+                    <button type="button" id="sidebar-bottom-close-btn" class="btn-sidebar-close" title="Menüyü Kapat"><i class="fa-solid fa-xmark"></i><span>Menüyü Kapat</span></button>
                 </li>
             </ul>
 
             <div class="sidebar-footer">
                 <div class="user-badge">
-                    <span class="user-name">Usta / Dükkan</span>
+                    <span class="user-name">Kullanıcı</span>
                     <span class="user-email-text" id="current-user-email">giriş yapıldı</span>
                 </div>
-                <button class="btn-icon-logout" id="btn-logout-sidebar" title="Çıkış Yap">
+                <button type="button" class="btn-icon-logout" id="btn-logout-sidebar" title="Çıkış Yap">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
             </div>
         </aside>
 
-        <!-- Mobil / Laptop Üst Bar (Menü Kapalıyken de Görünür) -->
+        <!-- Mobil / Laptop Üst Bar -->
         <header class="mobile-header">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Menüyü Aç/Kapat" title="Menü">
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="mobile-brand">
-                    <i class="fa-solid fa-hammer" style="color: var(--accent-primary);"></i>
-                    <span>NalburStok</span>
+                    <i class="fa-solid fa-boxes-stacked" style="color: var(--accent-primary);"></i>
+                    <span>SupaHızlıSatış</span>
                 </div>
             </div>
-            <button class="btn-icon-logout" id="btn-logout-mobile" title="Çıkış Yap">
+            <button type="button" class="btn-icon-logout" id="btn-logout-mobile" title="Çıkış Yap">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </button>
         </header>
 
-        <!-- Mobil Alt Menü Barı (Yatay Kaydırılabilir ve Başparmak Uyumlu) -->
+        <!-- Mobil Alt Menü Barı (5 Tuşlu Ergonomik Standart) -->
         <nav class="mobile-bottom-nav">
-            <button class="mobile-nav-btn active" id="m-nav-dashboard">
+            <button class="mobile-nav-btn active" id="m-nav-dashboard" title="Özet Panel">
                 <i class="fa-solid fa-chart-pie"></i>
                 <span>Özet</span>
             </button>
-            <button class="mobile-nav-btn" id="m-nav-pos">
+            <button class="mobile-nav-btn" id="m-nav-pos" title="Hızlı Satış">
                 <i class="fa-solid fa-cash-register"></i>
-                <span>Hızlı Satış</span>
+                <span>Satış</span>
             </button>
-            <button class="mobile-nav-btn" id="m-nav-customer-transactions">
-                <i class="fa-solid fa-money-bill-transfer"></i>
-                <span>Cari Hrk.</span>
-            </button>
-            <button class="mobile-nav-btn" id="m-nav-customers">
+            <button class="mobile-nav-btn" id="m-nav-customers" title="Cari Hesaplar">
                 <i class="fa-solid fa-address-book"></i>
-                <span>Cari</span>
+                <span>Cariler</span>
             </button>
-            <button class="mobile-nav-btn" id="m-nav-products">
+            <button class="mobile-nav-btn" id="m-nav-products" title="Ürünler & Stok">
                 <i class="fa-solid fa-boxes-stacked"></i>
                 <span>Stok</span>
-            </button>
-            <button class="mobile-nav-btn" id="m-nav-proposals">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
-                <span>Teklif</span>
-            </button>
-            <button class="mobile-nav-btn" id="m-nav-pricelists">
-                <i class="fa-solid fa-tags"></i>
-                <span>Fiyatlar</span>
-            </button>
-            <button class="mobile-nav-btn" id="m-nav-catalog">
-                <i class="fa-solid fa-book-open"></i>
-                <span>Katalog</span>
-            </button>
-            <button class="mobile-nav-btn" id="m-nav-movements">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>Depo Hrk.</span>
             </button>
             <button class="mobile-nav-btn mobile-nav-menu-btn" id="m-nav-menu" title="Tüm Menüyü Aç">
                 <i class="fa-solid fa-bars"></i>
@@ -949,7 +929,7 @@
                 <div class="view-header">
                     <div class="view-title-group">
                         <h2><i class="fa-solid fa-gauge-high" style="color: var(--accent-primary);"></i> Özet</h2>
-                        <p>Nalbur envanteri, kritik stok alarmları ve günlük satış özeti</p>
+                        <p>Envanter durumu, kritik stok alarmları ve günlük satış özeti</p>
                     </div>
                     <div class="view-header-actions">
                         <button class="btn btn-primary" id="dash-btn-quick-sale">
@@ -958,6 +938,103 @@
                         <button class="btn btn-secondary" id="dash-btn-new-product">
                             <i class="fa-solid fa-plus"></i> Yeni Ürün Ekle
                         </button>
+                    </div>
+                </div>
+
+                <!-- Flutter Tarzı Hızlı Menü Kartları (Quick Action Menu Grid) -->
+                <div class="quick-nav-section">
+                    <div class="quick-nav-header">
+                        <h3><i class="fa-solid fa-bolt" style="color: var(--accent-amber);"></i> Hızlı Menü & İşlemler</h3>
+                        <span class="quick-nav-badge">Kolay Erişim</span>
+                    </div>
+                    <div class="quick-nav-grid">
+                        <div class="quick-nav-card" data-view="pos">
+                            <div class="quick-nav-icon pos-accent">
+                                <i class="fa-solid fa-cash-register"></i>
+                            </div>
+                            <div class="quick-nav-content">
+                                <span class="quick-nav-title">Hızlı Satış</span>
+                                <span class="quick-nav-desc">Dokunmatik Kasa & Barkod</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right quick-nav-arrow"></i>
+                        </div>
+
+                        <div class="quick-nav-card" data-view="customers">
+                            <div class="quick-nav-icon customers-accent">
+                                <i class="fa-solid fa-address-book"></i>
+                            </div>
+                            <div class="quick-nav-content">
+                                <span class="quick-nav-title">Cari Hesaplar</span>
+                                <span class="quick-nav-desc">Müşteri & Tedarikçiler</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right quick-nav-arrow"></i>
+                        </div>
+
+                        <div class="quick-nav-card" data-view="products">
+                            <div class="quick-nav-icon products-accent">
+                                <i class="fa-solid fa-boxes-stacked"></i>
+                            </div>
+                            <div class="quick-nav-content">
+                                <span class="quick-nav-title">Ürünler & Stok</span>
+                                <span class="quick-nav-desc">Fiyat ve Envanter Yönetimi</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right quick-nav-arrow"></i>
+                        </div>
+
+                        <div class="quick-nav-card" data-view="proposals">
+                            <div class="quick-nav-icon proposals-accent">
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                            </div>
+                            <div class="quick-nav-content">
+                                <span class="quick-nav-title">Sipariş & Teklif</span>
+                                <span class="quick-nav-desc">Proforma Teklif & Fatura</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right quick-nav-arrow"></i>
+                        </div>
+
+                        <div class="quick-nav-card" data-view="customer-transactions">
+                            <div class="quick-nav-icon transactions-accent">
+                                <i class="fa-solid fa-money-bill-transfer"></i>
+                            </div>
+                            <div class="quick-nav-content">
+                                <span class="quick-nav-title">Cari & Kasa Hrk.</span>
+                                <span class="quick-nav-desc">Tahsilat, Ödeme ve Gider</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right quick-nav-arrow"></i>
+                        </div>
+
+                        <div class="quick-nav-card" data-view="pricelists">
+                            <div class="quick-nav-icon pricelists-accent">
+                                <i class="fa-solid fa-tags"></i>
+                            </div>
+                            <div class="quick-nav-content">
+                                <span class="quick-nav-title">Fiyat Listeleri</span>
+                                <span class="quick-nav-desc">Özel Fiyat & İskonto</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right quick-nav-arrow"></i>
+                        </div>
+
+                        <div class="quick-nav-card" data-view="catalog">
+                            <div class="quick-nav-icon catalog-accent">
+                                <i class="fa-solid fa-book-open"></i>
+                            </div>
+                            <div class="quick-nav-content">
+                                <span class="quick-nav-title">Dijital Katalog</span>
+                                <span class="quick-nav-desc">Afiş Oluşturucu & PDF</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right quick-nav-arrow"></i>
+                        </div>
+
+                        <div class="quick-nav-card" data-view="movements">
+                            <div class="quick-nav-icon movements-accent">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+                            <div class="quick-nav-content">
+                                <span class="quick-nav-title">Stok Hareketleri</span>
+                                <span class="quick-nav-desc">Giriş / Çıkış Geçmişi</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right quick-nav-arrow"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -1055,6 +1132,18 @@
                 <div class="view-header">
                     <div class="view-title-group">
                         <h2><i class="fa-solid fa-cash-register" style="color: var(--accent-primary);"></i> Hızlı Satış</h2>
+                        <p>Dokunmatik kasa, barkodlu hızlı satış ve anında fiş/tahsilat</p>
+                    </div>
+
+                    <!-- Mobil POS Sekme Değiştirici (Segmented Switcher) -->
+                    <div class="pos-mobile-tabs" id="pos-mobile-tabs">
+                        <button type="button" class="pos-tab-btn active" id="pos-tab-products-btn" data-tab="products">
+                            <i class="fa-solid fa-boxes-stacked"></i> <span>Ürünler</span>
+                        </button>
+                        <button type="button" class="pos-tab-btn" id="pos-tab-cart-btn" data-tab="cart">
+                            <i class="fa-solid fa-cart-shopping"></i> <span>Sepet</span>
+                            <span class="badge badge-amber pos-mobile-cart-badge" id="pos-mobile-cart-badge">0</span>
+                        </button>
                     </div>
                 </div>
 
@@ -1150,6 +1239,23 @@
 
                         <button class="btn btn-success btn-block btn-lg" id="pos-checkout-btn">
                             <i class="fa-solid fa-check"></i> <span>Satışı Tamamla</span>
+                        </button>
+                    </div>
+
+                    <!-- Mobilde Yüzen Sepet Barı (Floating Cart Bar) -->
+                    <div class="pos-floating-cart-bar" id="pos-floating-cart-bar" style="display: none;">
+                        <div class="pos-floating-cart-info">
+                            <div class="pos-floating-cart-icon">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                                <span class="pos-floating-badge" id="pos-floating-badge">0</span>
+                            </div>
+                            <div class="pos-floating-cart-text">
+                                <span class="pos-floating-title" id="pos-floating-count">0 Kalem</span>
+                                <span class="pos-floating-amount" id="pos-floating-total">0,00 ₺</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary pos-floating-cart-btn" id="pos-floating-open-cart-btn">
+                            <span>Sepeti Gör</span> <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
 
@@ -1671,16 +1777,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Modüler Uygulama Scriptleri -->
-    <script src="js/supabase.js?v=6.0" type="module"></script>
-    <script src="js/dashboard.js?v=4.0" type="module"></script>
-    <script src="js/products.js?v=4.0" type="module"></script>
-    <script src="js/pricelists.js?v=4.0" type="module"></script>
-    <script src="js/pos.js?v=4.0" type="module"></script>
-    <script src="js/customers.js?v=4.0" type="module"></script>
-    <script src="js/transactions.js?v=4.0" type="module"></script>
-    <script src="js/proposals.js?v=4.0" type="module"></script>
-    <script src="js/catalog.js?v=4.0" type="module"></script>
-    <script src="js/movements.js?v=4.0" type="module"></script>
+    <script src="js/supabase.js?v=7.0" type="module"></script>
+    <script src="js/dashboard.js?v=7.0" type="module"></script>
+    <script src="js/products.js?v=7.0" type="module"></script>
+    <script src="js/pricelists.js?v=7.0" type="module"></script>
+    <script src="js/pos.js?v=7.0" type="module"></script>
+    <script src="js/customers.js?v=7.0" type="module"></script>
+    <script src="js/transactions.js?v=7.0" type="module"></script>
+    <script src="js/proposals.js?v=7.0" type="module"></script>
+    <script src="js/catalog.js?v=7.0" type="module"></script>
+    <script src="js/movements.js?v=7.0" type="module"></script>
 
 </body>
 </html>

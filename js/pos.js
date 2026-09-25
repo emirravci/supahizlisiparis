@@ -19,6 +19,17 @@ const posTotalAmount = document.getElementById('pos-total-amount');
 const posCustomerName = document.getElementById('pos-customer-name');
 const posCheckoutBtn = document.getElementById('pos-checkout-btn');
 
+// DOM Elemanları - Mobil POS Sekmeleri & Yüzen Sepet Barı
+const posContainer = document.querySelector('.pos-container');
+const posTabProductsBtn = document.getElementById('pos-tab-products-btn');
+const posTabCartBtn = document.getElementById('pos-tab-cart-btn');
+const posMobileCartBadge = document.getElementById('pos-mobile-cart-badge');
+const posFloatingCartBar = document.getElementById('pos-floating-cart-bar');
+const posFloatingBadge = document.getElementById('pos-floating-badge');
+const posFloatingCount = document.getElementById('pos-floating-count');
+const posFloatingTotal = document.getElementById('pos-floating-total');
+const posFloatingOpenCartBtn = document.getElementById('pos-floating-open-cart-btn');
+
 // DOM Elemanları - Ürün Miktar & Fiyat Modal (Popup)
 const posItemModal = document.getElementById('pos-item-modal');
 const posItemModalClose = document.getElementById('pos-item-modal-close');
@@ -449,6 +460,42 @@ function updateCartItemQuantity(productId, newQty) {
     renderCart();
 }
 
+// Mobil POS Sekme Değiştirici (Ürünler <-> Sepet)
+export function switchPosMobileTab(tab) {
+    if (!posContainer) return;
+    if (tab === 'cart') {
+        posContainer.classList.add('mobile-show-cart');
+        if (posTabCartBtn) posTabCartBtn.classList.add('active');
+        if (posTabProductsBtn) posTabProductsBtn.classList.remove('active');
+        if (posFloatingCartBar) posFloatingCartBar.style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        posContainer.classList.remove('mobile-show-cart');
+        if (posTabProductsBtn) posTabProductsBtn.classList.add('active');
+        if (posTabCartBtn) posTabCartBtn.classList.remove('active');
+        if (posFloatingCartBar && cart.length > 0) {
+            posFloatingCartBar.style.display = 'flex';
+        }
+    }
+}
+
+if (posTabProductsBtn) {
+    posTabProductsBtn.addEventListener('click', () => switchPosMobileTab('products'));
+}
+if (posTabCartBtn) {
+    posTabCartBtn.addEventListener('click', () => switchPosMobileTab('cart'));
+}
+if (posFloatingOpenCartBtn) {
+    posFloatingOpenCartBtn.addEventListener('click', () => switchPosMobileTab('cart'));
+}
+if (posFloatingCartBar) {
+    posFloatingCartBar.addEventListener('click', (e) => {
+        if (e.target !== posFloatingOpenCartBtn && !posFloatingOpenCartBtn.contains(e.target)) {
+            switchPosMobileTab('cart');
+        }
+    });
+}
+
 function removeFromCart(productId) {
     cart = cart.filter(item => item.product.id !== productId);
     renderCart();
@@ -457,6 +504,7 @@ function removeFromCart(productId) {
 function clearCart() {
     cart = [];
     renderCart();
+    switchPosMobileTab('products');
 }
 
 if (posClearCartBtn) {
@@ -492,6 +540,9 @@ function renderCart() {
         `;
         if (posTotalItemsCount) posTotalItemsCount.innerText = '0 kalem';
         if (posTotalAmount) posTotalAmount.innerText = '0,00 ₺';
+        if (posMobileCartBadge) posMobileCartBadge.innerText = '0';
+        if (posFloatingBadge) posFloatingBadge.innerText = '0';
+        if (posFloatingCartBar) posFloatingCartBar.style.display = 'none';
         return;
     }
 
@@ -551,6 +602,21 @@ function renderCart() {
 
     if (posTotalItemsCount) posTotalItemsCount.innerText = `${totalItems} kalem`;
     if (posTotalAmount) posTotalAmount.innerText = formatCurrency(grandTotal);
+
+    // Mobil rozetleri ve yüzen barı güncelle
+    const badgeText = String(totalItems);
+    if (posMobileCartBadge) posMobileCartBadge.innerText = badgeText;
+    if (posFloatingBadge) posFloatingBadge.innerText = badgeText;
+    if (posFloatingCount) posFloatingCount.innerText = `${totalItems} Kalem Ürün`;
+    if (posFloatingTotal) posFloatingTotal.innerText = formatCurrency(grandTotal);
+
+    if (posFloatingCartBar) {
+        if (posContainer && !posContainer.classList.contains('mobile-show-cart')) {
+            posFloatingCartBar.style.display = 'flex';
+        } else {
+            posFloatingCartBar.style.display = 'none';
+        }
+    }
 }
 
 // ========================================================

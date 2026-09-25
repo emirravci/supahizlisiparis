@@ -70,30 +70,43 @@ export function isMobile() {
     return window.innerWidth <= 1024;
 }
 
-export function openSidebar(e) {
-    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+// Masaüstünde kayıtlı daraltma (collapsed) tercihi
+try {
+    const savedCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    if (savedCollapsed && !isMobile()) {
+        document.body.classList.add('sidebar-collapsed');
+    }
+} catch (e) {}
+
+export function openSidebar() {
     if (isMobile()) {
         document.body.classList.add('sidebar-open');
         if (appSidebar) appSidebar.classList.add('mobile-open');
         if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
         document.body.style.overflow = 'hidden';
+    } else {
+        document.body.classList.remove('sidebar-collapsed');
+        try { localStorage.setItem('sidebar_collapsed', 'false'); } catch (e) {}
     }
 }
 
-export function closeSidebar(e) {
-    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+export function closeSidebar() {
     document.body.classList.remove('sidebar-open');
     if (appSidebar) appSidebar.classList.remove('mobile-open');
     if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
     document.body.style.overflow = '';
 }
 
-export function toggleSidebar(e) {
-    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-    if (document.body.classList.contains('sidebar-open') || (appSidebar && appSidebar.classList.contains('mobile-open'))) {
-        closeSidebar(e);
+export function toggleSidebar() {
+    if (isMobile()) {
+        if (document.body.classList.contains('sidebar-open') || (appSidebar && appSidebar.classList.contains('mobile-open'))) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
     } else {
-        openSidebar(e);
+        const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+        try { localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false'); } catch (e) {}
     }
 }
 
@@ -105,7 +118,7 @@ window.openSidebar = openSidebar;
 window.closeSidebar = closeSidebar;
 window.toggleSidebar = toggleSidebar;
 
-// Buton Olay Dinleyicileri (Menüyü Açma / Kapatma)
+// Buton Olay Dinleyicileri (Menüyü Açma / Kapatma / Daraltma)
 if (mobileMenuToggle) {
     mobileMenuToggle.addEventListener('click', toggleSidebar);
 }
@@ -113,7 +126,13 @@ if (mNavMenuBtn) {
     mNavMenuBtn.addEventListener('click', toggleSidebar);
 }
 if (sidebarCloseBtn) {
-    sidebarCloseBtn.addEventListener('click', closeSidebar);
+    sidebarCloseBtn.addEventListener('click', () => {
+        if (isMobile()) {
+            closeSidebar();
+        } else {
+            toggleSidebar();
+        }
+    });
 }
 if (sidebarBottomCloseBtn) {
     sidebarBottomCloseBtn.addEventListener('click', closeSidebar);
@@ -124,14 +143,10 @@ if (sidebarBackdrop) {
 
 // Menü içi butonlara tıklandığında mobilde çekmeceyi otomatik kapat
 if (appSidebar) {
-    appSidebar.querySelectorAll('.sidebar-nav button, .sidebar-footer button').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            if (btn.id === 'sidebar-bottom-close-btn' || btn.id === 'sidebar-close-btn') {
-                closeSidebar(e);
-                return;
-            }
+    appSidebar.querySelectorAll('.sidebar-nav li').forEach(item => {
+        item.addEventListener('click', () => {
             if (isMobile()) {
-                closeSidebar(e);
+                closeSidebar();
             }
         });
     });
@@ -155,7 +170,7 @@ if (appSidebar) {
             const diffY = Math.abs(touchEndY - touchStartY);
 
             if (diffX < -45 && diffY < 80) {
-                closeSidebar(e);
+                closeSidebar();
             }
         }
     }, { passive: true });
@@ -164,11 +179,11 @@ if (appSidebar) {
 // ESC tuşuna basınca çekmeceyi kapat
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
-        closeSidebar(e);
+        closeSidebar();
     }
 });
 
-// Ekran genişliği masaüstüne çıktığında mobil kilitleri temizle
+// Ekran genişliği masaüstüne çıktığında mobil açık durumunu temizle
 window.addEventListener('resize', () => {
     if (!isMobile() && document.body.classList.contains('sidebar-open')) {
         closeSidebar();
@@ -310,6 +325,16 @@ Object.entries(navItems).forEach(([viewId, items]) => {
     if (items.mobile) {
         items.mobile.addEventListener('click', () => showView(viewId));
     }
+});
+
+// Flutter Tarzı Dashboard Hızlı Menü Kartları Dinleyicisi
+document.querySelectorAll('.quick-nav-card').forEach(card => {
+    card.addEventListener('click', () => {
+        const targetView = card.getAttribute('data-view');
+        if (targetView) {
+            showView(targetView);
+        }
+    });
 });
 
 // ========================================================

@@ -183,7 +183,7 @@ function renderProductsTable(products) {
             <td data-label="Kritik" class="mono-text" style="color: var(--text-muted); font-size: 0.85rem;">
                 ${p.min_stock} ${p.unit}
             </td>
-            <td>
+            <td class="action-col">
                 <div class="action-buttons">
                     <button class="btn-table-action stock-in" title="Hızlı Stok Ekle (Mal Kabul)" data-action="stock-in" data-id="${p.id}">
                         <i class="fa-solid fa-dolly"></i>

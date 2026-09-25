@@ -117,7 +117,7 @@ function renderMovementsTable(movements) {
             <td data-label="Birim Fiyat" class="mono-text" style="color: var(--text-muted);">${m.unit_price ? formatCurrency(m.unit_price) : '-'}</td>
             <td data-label="Toplam" class="mono-text" style="font-weight: 700;">${m.total_price ? formatCurrency(m.total_price) : '-'}</td>
             <td data-label="Not" style="font-size: 0.85rem; color: var(--text-dim);">${m.note || '-'}</td>
-            <td>
+            <td class="action-col">
                 <button class="btn-table-action delete btn-delete-movement" title="Bu Stok Hareketini Sil" data-id="${m.id}">
                     <i class="fa-solid fa-trash"></i>
                 </button>

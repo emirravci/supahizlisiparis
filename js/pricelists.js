@@ -167,21 +167,21 @@ function renderPriceListsTable(priceLists) {
             : '<span class="badge badge-red"><i class="fa-solid fa-xmark"></i> Pasif</span>';
 
         tr.innerHTML = `
-            <td>
+            <td data-label="Liste Adı">
                 <div style="font-weight: 700; color: var(--text-main);">${pl.name}</div>
             </td>
-            <td>
+            <td data-label="Kod">
                 <span class="badge badge-amber mono-text">${pl.code || 'ÖZEL'}</span>
             </td>
-            <td>
+            <td data-label="Tanımlı Ürün">
                 <span class="mono-text" style="font-weight: 700; color: var(--accent-primary);">
                     ${itemCount} Ürün
                 </span>
             </td>
-            <td style="font-size: 0.85rem; color: var(--text-muted);">${validText}</td>
-            <td style="font-size: 0.85rem; color: var(--text-dim);">${pl.description || '-'}</td>
-            <td>${statusBadge}</td>
-            <td>
+            <td data-label="Geçerlilik" style="font-size: 0.85rem; color: var(--text-muted);">${validText}</td>
+            <td data-label="Açıklama" style="font-size: 0.85rem; color: var(--text-dim);">${pl.description || '-'}</td>
+            <td data-label="Durum">${statusBadge}</td>
+            <td class="action-col">
                 <div class="action-buttons">
                     <button class="btn btn-sm btn-primary" data-action="manage-items" data-id="${pl.id}" style="height: 32px; padding: 0 10px; font-size: 0.8rem;">
                         <i class="fa-solid fa-list-check"></i> Fiyatları Belirle
@@ -391,20 +391,20 @@ function renderPriceListItems() {
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>
+            <td data-label="Ürün Adı">
                 <div style="font-weight: 700;">${p.name || 'Bilinmeyen Ürün'}</div>
                 <div style="font-size: 0.75rem; color: var(--text-dim);">${p.category || ''}</div>
             </td>
-            <td><span class="mono-text price-old-striked">${formatCurrency(stdPrice)}</span></td>
-            <td>
+            <td data-label="Standart Fiyat"><span class="mono-text price-old-striked">${formatCurrency(stdPrice)}</span></td>
+            <td data-label="Özel Fiyat">
                 <span class="mono-text" style="font-weight: 800; font-size: 1rem; color: var(--accent-primary);">
                     ${formatCurrency(customPrice)}
                 </span>
                 <span style="font-size: 0.78rem; color: var(--text-dim);">/ ${p.unit || 'Adet'}</span>
             </td>
-            <td>${diffBadge}</td>
-            <td class="mono-text">${item.min_quantity} ${p.unit || 'Adet'}</td>
-            <td style="text-align: right;">
+            <td data-label="Fark">${diffBadge}</td>
+            <td data-label="Min. Miktar" class="mono-text">${item.min_quantity} ${p.unit || 'Adet'}</td>
+            <td class="action-col" style="text-align: right;">
                 <button class="btn-table-action delete" title="Listeden Çıkar" data-id="${item.id}">
                     <i class="fa-solid fa-trash"></i>
                 </button>

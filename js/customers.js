@@ -142,7 +142,7 @@ function renderCustomersTable(customers) {
                 <div class="mono-text" style="font-size: 0.75rem; color: var(--text-dim);">${c.tax_number || ''}</div>
             </td>
             <td data-label="Bakiye">${balBadge}</td>
-            <td>
+            <td class="action-col">
                 <div class="action-buttons">
                     <button class="btn-table-action" title="Cari Ekstresi & Hareketler" data-action="ledger" data-id="${c.id}" style="color: #6366f1;">
                         <i class="fa-solid fa-file-invoice"></i>
@@ -578,15 +578,15 @@ function renderCustomerLedger(transactions) {
         }
 
         tr.innerHTML = `
-            <td style="font-size: 0.82rem; white-space: nowrap;">${formatDateTime(t.created_at)}</td>
-            <td>${typeBadge}</td>
-            <td><span class="badge" style="background: var(--bg-input); font-size: 0.78rem;">${t.payment_method || 'Nakit'}</span></td>
-            <td><span class="mono-text" style="font-size: 0.8rem; color: var(--text-dim);">${t.receipt_no || '-'}</span></td>
-            <td style="font-size: 0.85rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.description || ''}">${t.description || '-'}</td>
-            <td style="text-align: right;" class="mono-text">${debt > 0 ? `<span style="color: var(--accent-danger); font-weight: 700;">${formatCurrency(debt)}</span>` : '-'}</td>
-            <td style="text-align: right;" class="mono-text">${credit > 0 ? `<span style="color: var(--accent-success); font-weight: 700;">${formatCurrency(credit)}</span>` : '-'}</td>
-            <td style="text-align: right;">${balText}</td>
-            <td style="text-align: right;">
+            <td data-label="Tarih" style="font-size: 0.82rem; white-space: nowrap;">${formatDateTime(t.created_at)}</td>
+            <td data-label="Tür">${typeBadge}</td>
+            <td data-label="Ödeme"><span class="badge" style="background: var(--bg-input); font-size: 0.78rem;">${t.payment_method || 'Nakit'}</span></td>
+            <td data-label="Evrak No"><span class="mono-text" style="font-size: 0.8rem; color: var(--text-dim);">${t.receipt_no || '-'}</span></td>
+            <td data-label="Açıklama" style="font-size: 0.85rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.description || ''}">${t.description || '-'}</td>
+            <td data-label="Borç" style="text-align: right;" class="mono-text">${debt > 0 ? `<span style="color: var(--accent-danger); font-weight: 700;">${formatCurrency(debt)}</span>` : '-'}</td>
+            <td data-label="Alacak" style="text-align: right;" class="mono-text">${credit > 0 ? `<span style="color: var(--accent-success); font-weight: 700;">${formatCurrency(credit)}</span>` : '-'}</td>
+            <td data-label="Bakiye" style="text-align: right;">${balText}</td>
+            <td class="action-col" style="text-align: right;">
                 <button class="btn-table-action delete btn-delete-ledger-trans" title="Bu Hareketi Sil" data-id="${t.id}">
                     <i class="fa-solid fa-trash"></i>
                 </button>

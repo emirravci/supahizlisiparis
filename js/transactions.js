@@ -248,7 +248,7 @@ function renderTransactionsTable(items) {
             <td data-label="Borç" style="text-align: right;" class="mono-text">${debt > 0 ? `<span style="color: var(--accent-danger); font-weight: 700;">${formatCurrency(debt)}</span>` : '-'}</td>
             <td data-label="Alacak" style="text-align: right;" class="mono-text">${credit > 0 ? `<span style="color: var(--accent-success); font-weight: 700;">${formatCurrency(credit)}</span>` : '-'}</td>
             <td data-label="Tutar" style="text-align: right;" class="mono-text">${formatCurrency(amount)}</td>
-            <td>
+            <td class="action-col">
                 <button class="btn-table-action delete btn-delete-transaction" title="Bu Hareketi Sil" data-id="${t.id}">
                     <i class="fa-solid fa-trash"></i>
                 </button>

@@ -265,7 +265,7 @@ function renderProposalsTable(proposals) {
                 ${formatCurrency(p.total_amount)}
             </td>
             <td data-label="Durum">${statusBadge}</td>
-            <td>
+            <td class="action-col">
                 <div class="action-buttons">
                     <button class="btn-table-action" title="Proforma Yazdır / Görüntüle" data-action="view-proforma" data-id="${p.id}" style="color: var(--accent-primary);">
                         <i class="fa-solid fa-print"></i>
@@ -386,12 +386,12 @@ function renderProposalItems() {
     currentProposalItems.forEach((item, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td style="font-weight: 600;">${item.product_name}</td>
-            <td class="mono-text">${item.quantity}</td>
-            <td>${item.unit}</td>
-            <td class="mono-text">${formatCurrency(item.unit_price)}</td>
-            <td class="mono-text" style="font-weight: 700; color: var(--accent-primary);">${formatCurrency(item.total_price)}</td>
-            <td style="text-align: right;">
+            <td data-label="Ürün" style="font-weight: 600;">${item.product_name}</td>
+            <td data-label="Miktar" class="mono-text">${item.quantity}</td>
+            <td data-label="Birim">${item.unit}</td>
+            <td data-label="Birim Fiyat" class="mono-text">${formatCurrency(item.unit_price)}</td>
+            <td data-label="Toplam" class="mono-text" style="font-weight: 700; color: var(--accent-primary);">${formatCurrency(item.total_price)}</td>
+            <td data-label="İşlem" class="action-col" style="text-align: right;">
                 <button type="button" class="btn-table-action delete" data-index="${index}" title="Kalemi Kaldır">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
